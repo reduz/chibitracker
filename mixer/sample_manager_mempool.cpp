@@ -78,7 +78,7 @@ void SampleManager_MemPool::recreate(Sample_ID p_id,bool p_16bits,bool p_stereo,
 	samp->is_16bits=p_16bits;
 	samp->stereo=p_stereo;
 	samp->size=p_len;
-	Uint32 mem_size=(p_len+1)*(p_16bits?2:1)*(p_stereo?2:1); //extra sample for interpolation
+	Uint32 mem_size=(p_len+3)*(p_16bits?2:1)*(p_stereo?2:1); //3 extra samples for interpolation
 	
 	samp->mem_handle = MemPool_Wrapper::get_singleton()->alloc_mem(mem_size);
 
@@ -126,7 +126,7 @@ Sample_ID SampleManager_MemPool::create(bool p_16bits,bool p_stereo,Sint32 p_len
 	new_samp->is_16bits=p_16bits;
 	new_samp->stereo=p_stereo;
 	new_samp->size=p_len;
-	Uint32 mem_size=(p_len+1)*(p_16bits?2:1)*(p_stereo?2:1); //one extra sample, for interpolation
+	Uint32 mem_size=(p_len+3)*(p_16bits?2:1)*(p_stereo?2:1); //three extra sample, for interpolation
 	
 	
 	
@@ -183,6 +183,12 @@ bool SampleManager_MemPool::check(Sample_ID p_id) {
 void SampleManager_MemPool::fix_loop_end(Sample_ID p_id) {
 	/* Set the last frame to the begining of the loop, so interpolation works well */
 	int ch=is_stereo( p_id) ?2:1;
+	
+	for (int i=0;i<ch;i++) {
+		
+		set_data( p_id, -1, 0 , i );
+	}
+	
 	if (get_loop_type( p_id)!=LOOP_NONE && get_loop_end( p_id)==get_size( p_id) ) {
 		
 		
@@ -191,12 +197,14 @@ void SampleManager_MemPool::fix_loop_end(Sample_ID p_id) {
 			for (int i=0;i<ch;i++) {
 				
 				set_data( p_id, get_size( p_id), get_data( p_id,  get_loop_begin( p_id) + 1, i ), i );
+				set_data( p_id, get_size( p_id)+1, get_data( p_id,  get_loop_begin( p_id) + 1, i ), i );
 			}
 		} else {
 			
 			for (int i=0;i<ch;i++) {
 				
 				set_data( p_id, get_size( p_id), get_data( p_id,  get_loop_end( p_id) -1 , i ), i );
+				set_data( p_id, get_size( p_id)+1, get_data( p_id,  get_loop_end( p_id) -1 , i ), i );
 			}
 			
 			
@@ -207,6 +215,7 @@ void SampleManager_MemPool::fix_loop_end(Sample_ID p_id) {
 		for (int i=0;i<ch;i++) {
 			
 			set_data( p_id, get_size( p_id), 0 , i );
+			set_data( p_id, get_size( p_id)+1, 0 , i );
 		}
 		
 	}
@@ -295,13 +304,13 @@ void SampleManager_MemPool::set_chunk(Sample_ID p_id,Sint32 p_index,void *p_data
 	int samples_to_copy=p_data_len*(smp->stereo?2:1);
 	if (smp->is_16bits) {
 		Frame16 *src=(Frame16*)p_data;
-		Frame16 *dst=&((Frame16*)data)[p_index];
+		Frame16 *dst=&((Frame16*)data)[p_index+1];
 		for (int i=0;i<samples_to_copy;i++)
 			dst[i]=src[i];
 	} else {
 
 		Frame8 *src=(Frame8*)p_data;
-		Frame8 *dst=&((Frame8*)data)[p_index];
+		Frame8 *dst=&((Frame8*)data)[p_index+1];
 		for (int i=0;i<samples_to_copy;i++)
 			dst[i]=src[i];
 
@@ -406,7 +415,18 @@ void *SampleManager_MemPool::get_data(Sample_ID p_id) {
 	if (!(smp=get_sample(p_id)))
 		return NULL;
 
-	return MemPool_Wrapper::get_singleton()->get_mem(smp->mem_handle);
+	void *data=MemPool_Wrapper::get_singleton()->get_mem(smp->mem_handle);
+	
+	ERR_FAIL_COND_V(!data,NULL);
+	
+	if (smp->is_16bits) {
+		Frame16 *src=&((Frame16*)data)[1];
+		return src;
+	} else {
+
+		Frame8 *src=&((Frame8*)data)[1];
+		return src;
+	}
 }
 
 Sint16 SampleManager_MemPool::get_data(Sample_ID p_id, int p_sample, int p_channel) {
@@ -476,7 +496,7 @@ void SampleManager_MemPool::set_data(Sample_ID p_id, int p_sample, Sint16 p_data
 	if (!(smp=get_sample(p_id)))
 		return;
 	
-	ERR_FAIL_INDEX(p_sample,(smp->size+1));
+	ERR_FAIL_COND( p_sample<-1 || (p_sample>smp->size+1));
 	ERR_FAIL_COND(p_channel<0);
 	
 	if (smp->stereo) {
@@ -533,7 +553,7 @@ void SampleManager_MemPool::set_data(Sample_ID p_id, int p_sample, Sint16 p_data
 	unlock_data( p_id );
 	AudioLock::end();
 	
-	if (p_sample==(smp->size-1) ||  (smp->loop.type!=LOOP_NONE && p_sample==smp->loop.begin && smp->loop.begin<(smp->size-1)))
+	if ((p_sample>=0 && p_sample<smp->size) && (p_sample==(smp->size-1) ||  (smp->loop.type!=LOOP_NONE && p_sample==smp->loop.begin && smp->loop.begin<(smp->size-1))))
 		fix_loop_end( p_id );
 }
 
@@ -558,13 +578,13 @@ void SampleManager_MemPool::get_chunk(Sample_ID p_id,Sint32 p_index,void *p_data
 	
 	if (smp->is_16bits) {
 		Frame16 *dst=(Frame16*)p_data;
-		Frame16 *src=&((Frame16*)data)[p_index];
+		Frame16 *src=&((Frame16*)data)[p_index+1];
 		for (int i=0;i<p_data_len;i++)
-		dst[i]=src[i];
+			dst[i]=src[i];
 	} else {
 
 		Frame8 *dst=(Frame8*)p_data;
-		Frame8 *src=&((Frame8*)data)[p_index];
+		Frame8 *src=&((Frame8*)data)[p_index+1];
 		for (int i=0;i<p_data_len;i++)
 		dst[i]=src[i];
 	}

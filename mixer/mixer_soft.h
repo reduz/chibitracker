@@ -23,6 +23,13 @@
 class Mixer_Soft : public Mixer {
 protected:
 	
+	enum {
+	
+		SPLINE_FRACBITS=10,
+		SPLINE_LUTLEN=(1L<<SPLINE_FRACBITS)
+		
+	};
+	
 	struct Voice {
 
 		/* Control Variables */
@@ -156,12 +163,43 @@ protected:
 	
 	SampleManager *sample_manager;
 
+	static int cubic_lut[4*SPLINE_LUTLEN];
+	
+	template<class Depth,bool is_stereo,bool use_filter,bool use_vramp,bool use_fx,InterpolationType type>
+	inline static void do_resample(	
+		const Depth* p_src,
+		Sint32 *p_dst,int p_amount,
+		const Sint32 &p_increment,
+		Sint32 p_pos,
+		Sint32 *p_lvol,
+		Sint32 *p_rvol,
+		Sint32 p_lvol_inc,
+		Sint32 p_rvol_inc,
+		//filter
+		Sint32 &p_lp_c1,
+		Sint32 &p_lp_c2,
+		Sint32 &p_lp_c3,
+		Sint32 p_lp_c1_inc,
+		Sint32 p_lp_c2_inc,
+		Sint32 p_lp_c3_inc,
+		
+		Sint64 *p_lp_h1,
+		Sint64 *p_lp_h2,
+		Sint32 *p_chorus_buff,
+		Sint32 p_chorus_level,
+		Uint32 p_chorus_pos,
+		Sint32 *p_reverb_buff,
+		Sint32 p_reverb_level,
+		Uint32 p_reverb_pos);
+
+
+	void init_cubic_lut();
 /* Protected interface for inheritance */
 	
 	/* External sound driver control */
 
 	
-	/* INHERIT AND OVERRIDE THIS FOR IMPLEMENTATION-SPECIFIC OPTIMIZATIONS!! */
+	/* INHERIT AND OVERRIDE THIS FOR IMPLEMENTATION-SPECIFIC OPTIMIZATIONS!! */	
 	virtual void process_voice(int p_voice_index,Sint32 p_frames,Sint32 *p_auxbuff=0);
 	
 	void process_internal(Sint32 p_frames);

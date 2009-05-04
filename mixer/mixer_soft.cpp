@@ -731,7 +731,7 @@ Mixer_Soft::Mixer_Soft() {
 	chorus.depth_ms10=6,
 	chorus.speed_hz10=5;
 	
-	
+	init_cubic_lut();	
 }
 
 
