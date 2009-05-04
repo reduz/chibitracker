@@ -1,0 +1,6 @@
+Import('env');
+Export('env');
+
+targets=['mempool_wrapper.cpp','file_access_wrapper.cpp','error_macros.cpp','mempool_fixedarea.cpp'];
+
+env.Library('globals', targets);

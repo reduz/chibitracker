@@ -1,0 +1,6 @@
+Import('env');
+Export('env');
+
+targets=['song.cpp','sample.cpp','instrument.cpp','envelope.cpp','pattern.cpp'];
+
+env.Library('song', targets);

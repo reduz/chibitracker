@@ -1,0 +1,7 @@
+Import('env');
+Export('env');
+
+targets=['playback_button.cpp','pattern_editor.cpp','pattern_screen.cpp','sample_screen.cpp','instrument_screen.cpp','variables_screen.cpp','sample_instrument_table.cpp','ctskin.cpp','interface.cpp','orderlist_editor.cpp','pattern_editor_top.cpp','pattern_editor_mask.cpp','pattern_editor_rows.cpp','interface.cpp','sample_editor.cpp','sample_editor_clipboard.cpp','sample_editor_effects.cpp','sample_editor_format.cpp','sample_viewer.cpp','sample_viewer_zoom.cpp','envelope_editor.cpp','envelope_point_editor.cpp','theme_dialog.cpp','sound_driver_dialog.cpp','keyboard_dialog.cpp','sample_viewer_positions.cpp','sample_status_list.cpp','pattern_editor_oscs.cpp','reverb.cpp','mixer_dialog.cpp','keyboard_dialog.cpp','sample_file_dialog.cpp','config_api.cpp','config_file.cpp','interface_settings_dialog.cpp','theme_loader.cpp','interface_help.cpp','wav_saver_dialog.cpp','main_vu.cpp','pattern_transpose.cpp','paths_dialog.cpp','default_paths.cpp','interface_mini.cpp','mini_theme.cpp'];
+#targets=['pattern_editor.cpp','pattern_screen.cpp','sample_screen.cpp','instrument_screen.cpp','sample_instrument_table.cpp','ctskin.cpp','interface.cpp','orderlist_editor.cpp','pattern_editor_top.cpp','pattern_editor_mask.cpp','pattern_editor_rows.cpp','interface.cpp','sample_editor.cpp','sample_editor_clipboard.cpp','sample_editor_effects.cpp','sample_editor_format.cpp','sample_viewer.cpp','sample_viewer_zoom.cpp','envelope_point_editor.cpp'];
+
+env.Library('interface', targets);

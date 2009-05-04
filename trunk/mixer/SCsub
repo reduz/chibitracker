@@ -1,0 +1,6 @@
+Import('env');
+Export('env');
+
+targets=['mixer_soft.cpp','mixer_soft_default.cpp','sample_manager.cpp','sample_manager_mempool.cpp','audio_lock.cpp','sound_driver.cpp','sound_driver_manager.cpp','mixer_soft_filter.cpp','mixer_soft_effects.cpp','reverb.cpp'];
+
+env.Library('mixer', targets);
