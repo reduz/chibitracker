@@ -13,6 +13,19 @@
 #include "mixer_soft.h"
 #include "sample_defs.h"
 #include <stdio.h>
+#include <math.h>
+
+
+#define SPLINE_QUANTBITS	14
+#define SPLINE_QUANTSCALE	(1L<<SPLINE_QUANTBITS)
+#define SPLINE_8SHIFT		(SPLINE_QUANTBITS-8)
+#define SPLINE_16SHIFT		(SPLINE_QUANTBITS)
+// forces coefsset to unity gain
+#define SPLINE_CLAMPFORUNITY
+// log2(number) of precalculated splines (range is [4..14])
+
+#define SPLINE_FRACSHIFT ((MIXING_FRAC_BITS-SPLINE_FRACBITS)-2)
+#define SPLINE_FRACMASK (((1L<<(MIXING_FRAC_BITS-SPLINE_FRACSHIFT))-1)&~3)
 
 #define NO_ASSEMBLER 1
 
@@ -141,9 +154,10 @@ __attribute__((noinline)) void do_resample (
 
 #else
 
+int Mixer_Soft::cubic_lut[4*(1L<<SPLINE_FRACBITS)];
 
 template<class Depth,bool is_stereo,bool use_filter,bool use_vramp,bool use_fx,InterpolationType type>
-inline void do_resample(
+void Mixer_Soft::do_resample(
 
 	
 	const Depth* p_src,
@@ -173,6 +187,9 @@ inline void do_resample(
 	
 		       ) {
 
+	int spline_fracshift=(MIXING_FRAC_BITS-SPLINE_FRACBITS)-2;
+	int spline_fracmask=(((1L<<(MIXING_FRAC_BITS-spline_fracshift))-1)&~3);
+	
 	Sint32 final,final_r,next,next_r;
 	while (p_amount--) {
 
@@ -212,6 +229,68 @@ inline void do_resample(
 				final_r=final_r+((next_r-final_r)*frac >> MIXING_FRAC_BITS);
 		}
 		
+		if (type==INTERPOLATION_CUBIC) {
+
+			int spfrac = (p_pos >> SPLINE_FRACSHIFT) & SPLINE_FRACMASK;
+		
+			if (!is_stereo) {
+			
+				Sint32 a=p_src[pos-1];
+				Sint32 b=final;
+				Sint32 c=p_src[pos+1];
+				Sint32 d=p_src[pos+2];
+				
+				if (sizeof(Depth)==1) {
+					a<<=8;
+					c<<=8;
+					d<<=8;
+				}
+				
+				
+				final = (cubic_lut[spfrac]*a +
+					cubic_lut[spfrac+1]*b +
+					cubic_lut[spfrac+2]*c +
+					cubic_lut[spfrac+3]*d) >> SPLINE_16SHIFT;
+			} else {
+			
+			
+				Sint32 al=p_src[pos-2];
+				Sint32 bl=final;
+				Sint32 cl=p_src[pos+2];
+				Sint32 dl=p_src[pos+4];
+				
+				Sint32 ar=p_src[pos-1];
+				Sint32 br=final_r;
+				Sint32 cr=p_src[pos+3];
+				Sint32 dr=p_src[pos+5];
+				
+				if (sizeof(Depth)==1) {
+					al<<=8;
+					cl<<=8;
+					dl<<=8;
+					ar<<=8;
+					cr<<=8;
+					dr<<=8;
+				}
+				
+				Sint32 sp0=cubic_lut[spfrac];
+				Sint32 sp1=cubic_lut[spfrac+1];
+				Sint32 sp2=cubic_lut[spfrac+2];
+				Sint32 sp3=cubic_lut[spfrac+3];
+				
+				final = (sp0*al +
+					sp1*bl +
+					sp2*cl +
+					sp3*dl) >> SPLINE_16SHIFT;
+			
+				final_r = (sp0*ar +
+					sp1*br +
+					sp2*cr +
+					sp3*dr) >> SPLINE_16SHIFT;
+			
+			}
+		}
+
 		if (use_filter) {
 			
 			// well, convert to less resolution for filters.. can't do much, sorry!
@@ -286,6 +365,38 @@ inline void do_resample(
 		}
 	}
 	
+}
+
+void Mixer_Soft::init_cubic_lut() {
+
+
+	int length		= (1L<<SPLINE_FRACBITS);
+	float length_f	= 1.0f / (float)length;
+	float scale	= (float)SPLINE_QUANTSCALE;
+	for(int i=0;i<length;i++)
+	{	float cm1, c0, c1, c2;
+		float x		= ((float)i)*length_f;
+		int sum,idx	= i<<2;
+		cm1			= (float)floor( 0.5 + scale * (-0.5*x*x*x + 1.0 * x*x - 0.5 * x       ) );
+		c0			= (float)floor( 0.5 + scale * ( 1.5*x*x*x - 2.5 * x*x             + 1.0 ) );
+		c1			= (float)floor( 0.5 + scale * (-1.5*x*x*x + 2.0 * x*x + 0.5 * x       ) );
+		c2			= (float)floor( 0.5 + scale * ( 0.5*x*x*x - 0.5 * x*x                   ) );
+		cubic_lut[idx+0]	= (signed short)( (cm1 < -scale) ? -scale : ((cm1 > scale) ? scale : cm1) );
+		cubic_lut[idx+1]	= (signed short)( (c0  < -scale) ? -scale : ((c0  > scale) ? scale : c0 ) );
+		cubic_lut[idx+2]	= (signed short)( (c1  < -scale) ? -scale : ((c1  > scale) ? scale : c1 ) );
+		cubic_lut[idx+3]	= (signed short)( (c2  < -scale) ? -scale : ((c2  > scale) ? scale : c2 ) );
+#ifdef SPLINE_CLAMPFORUNITY
+		sum			= cubic_lut[idx+0]+cubic_lut[idx+1]+cubic_lut[idx+2]+cubic_lut[idx+3];
+		if( sum != SPLINE_QUANTSCALE )
+		{	int max = idx;
+			if( cubic_lut[idx+1]>cubic_lut[max] ) max = idx+1;
+			if( cubic_lut[idx+2]>cubic_lut[max] ) max = idx+2;
+			if( cubic_lut[idx+3]>cubic_lut[max] ) max = idx+3;
+			cubic_lut[max] += (SPLINE_QUANTSCALE-sum);
+		}
+#endif
+	}
+
 }
 
 #endif
@@ -573,6 +684,56 @@ do_resample<m_depth,m_stereo,m_use_filter,false,m_use_fx,m_interp>( \
 						}					
 							
 						
+					} else if (data.interpolation_type==INTERPOLATION_CUBIC) {
+				
+						if (mix_stereo) {
+							if (v.fx.filter.enabled && data.filters) {
+								if (mix_16) {
+						
+									NORAMP_MIX(Sint16,true,true,true,INTERPOLATION_CUBIC);
+					
+								} else {
+					
+									NORAMP_MIX(Sint8,true,true,true,INTERPOLATION_CUBIC);
+								}
+							} else { //filter
+								
+								if (mix_16) {
+						
+									NORAMP_MIX(Sint16,true,false,true,INTERPOLATION_CUBIC);
+					
+								} else {
+					
+									NORAMP_MIX(Sint8,true,false,true,INTERPOLATION_CUBIC);
+								}
+								
+							} 
+						} else {
+							
+							if (v.fx.filter.enabled && data.filters) {
+								if (mix_16) {
+						
+									NORAMP_MIX(Sint16,false,true,true,INTERPOLATION_CUBIC);
+					
+								} else {
+					
+									NORAMP_MIX(Sint8,false,true,true,INTERPOLATION_CUBIC);
+								}
+							} else { //filter
+								
+								if (mix_16) {
+						
+									NORAMP_MIX(Sint16,false,false,true,INTERPOLATION_CUBIC);
+					
+								} else {
+					
+									NORAMP_MIX(Sint8,false,false,true,INTERPOLATION_CUBIC);
+								}
+								
+							} 
+						}					
+							
+						
 					} else { //interp
 						
 						if (mix_stereo) {
@@ -671,6 +832,55 @@ do_resample<m_depth,m_stereo,m_use_filter,false,m_use_fx,m_interp>( \
 								} else {
 					
 									NORAMP_MIX(Sint8,false,false,false,INTERPOLATION_LINEAR);
+								}
+								
+							} 
+						}					
+							
+					} else if (data.interpolation_type==INTERPOLATION_CUBIC) {
+				
+						if (mix_stereo) {
+							if (v.fx.filter.enabled && data.filters) {
+								if (mix_16) {
+						
+									NORAMP_MIX(Sint16,true,true,false,INTERPOLATION_CUBIC);
+					
+								} else {
+					
+									NORAMP_MIX(Sint8,true,true,false,INTERPOLATION_CUBIC);
+								}
+							} else { //filter
+								
+								if (mix_16) {
+						
+									NORAMP_MIX(Sint16,true,false,false,INTERPOLATION_CUBIC);
+					
+								} else {
+					
+									NORAMP_MIX(Sint8,true,false,false,INTERPOLATION_CUBIC);
+								}
+								
+							} 
+						} else {
+							
+							if (v.fx.filter.enabled && data.filters) {
+								if (mix_16) {
+						
+									NORAMP_MIX(Sint16,false,true,false,INTERPOLATION_CUBIC);
+					
+								} else {
+					
+									NORAMP_MIX(Sint8,false,true,false,INTERPOLATION_CUBIC);
+								}
+							} else { //filter
+								
+								if (mix_16) {
+						
+									NORAMP_MIX(Sint16,false,false,false,INTERPOLATION_CUBIC);
+					
+								} else {
+					
+									NORAMP_MIX(Sint8,false,false,false,INTERPOLATION_CUBIC);
 								}
 								
 							} 
@@ -838,6 +1048,58 @@ do_resample<m_depth,m_stereo,m_use_filter,true,m_use_fx,m_interp>( \
 						}					
 						
 					
+					
+					} else if (data.interpolation_type==INTERPOLATION_CUBIC) {
+			
+						if (mix_stereo) {
+							if (v.fx.filter.enabled && data.filters) {
+								if (mix_16) {
+					
+									RAMP_MIX(Sint16,true,true,true,INTERPOLATION_CUBIC);
+				
+								} else {
+				
+									RAMP_MIX(Sint8,true,true,true,INTERPOLATION_CUBIC);
+								}
+							} else { //filter
+							
+								if (mix_16) {
+					
+									RAMP_MIX(Sint16,true,false,true,INTERPOLATION_CUBIC);
+				
+								} else {
+				
+									RAMP_MIX(Sint8,true,false,true,INTERPOLATION_CUBIC);
+								}
+							
+							} 
+						} else {
+						
+							if (v.fx.filter.enabled && data.filters) {
+								if (mix_16) {
+					
+									RAMP_MIX(Sint16,false,true,true,INTERPOLATION_CUBIC);
+				
+								} else {
+				
+									RAMP_MIX(Sint8,false,true,true,INTERPOLATION_CUBIC);
+								}
+							} else { //filter
+							
+								if (mix_16) {
+					
+									RAMP_MIX(Sint16,false,false,true,INTERPOLATION_CUBIC);
+				
+								} else {
+				
+									RAMP_MIX(Sint8,false,false,true,INTERPOLATION_CUBIC);
+								}
+							
+							} 
+						}					
+						
+					
+										
 					} else { //interp
 					
 						if (mix_stereo) {
@@ -936,6 +1198,56 @@ do_resample<m_depth,m_stereo,m_use_filter,true,m_use_fx,m_interp>( \
 								} else {
 				
 									RAMP_MIX(Sint8,false,false,false,INTERPOLATION_LINEAR);
+								}
+							
+							} 
+						}					
+						
+					
+					} else if (data.interpolation_type==INTERPOLATION_CUBIC) {
+			
+						if (mix_stereo) {
+							if (v.fx.filter.enabled && data.filters) {
+								if (mix_16) {
+					
+									RAMP_MIX(Sint16,true,true,false,INTERPOLATION_CUBIC);
+				
+								} else {
+				
+									RAMP_MIX(Sint8,true,true,false,INTERPOLATION_CUBIC);
+								}
+							} else { //filter
+							
+								if (mix_16) {
+					
+									RAMP_MIX(Sint16,true,false,false,INTERPOLATION_CUBIC);
+				
+								} else {
+				
+									RAMP_MIX(Sint8,true,false,false,INTERPOLATION_CUBIC);
+								}
+							
+							} 
+						} else {
+						
+							if (v.fx.filter.enabled && data.filters) {
+								if (mix_16) {
+					
+									RAMP_MIX(Sint16,false,true,false,INTERPOLATION_CUBIC);
+				
+								} else {
+				
+									RAMP_MIX(Sint8,false,true,false,INTERPOLATION_CUBIC);
+								}
+							} else { //filter
+							
+								if (mix_16) {
+					
+									RAMP_MIX(Sint16,false,false,false,INTERPOLATION_CUBIC);
+				
+								} else {
+				
+									RAMP_MIX(Sint8,false,false,false,INTERPOLATION_CUBIC);
 								}
 							
 							} 

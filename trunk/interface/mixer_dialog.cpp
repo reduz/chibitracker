@@ -41,6 +41,7 @@ void MixerDialog::update_params() {
 		
 		case INTERPOLATION_RAW: sw_mixer->set_mix_interpolation( INTERPOLATION_RAW ) ; break;
 		case INTERPOLATION_LINEAR: sw_mixer->set_mix_interpolation( INTERPOLATION_LINEAR ) ; break;
+		case INTERPOLATION_CUBIC: sw_mixer->set_mix_interpolation( INTERPOLATION_CUBIC ) ; break;
 	};
 		
 	sw_mixer->set_use_filters( filters->is_checked() );
@@ -81,6 +82,8 @@ void MixerDialog::read_slot(String p_section,String p_entry,String p_value) {
 			sw_mixer->set_mix_interpolation( INTERPOLATION_RAW );
 		else if (p_value=="linear")
 			sw_mixer->set_mix_interpolation( INTERPOLATION_LINEAR );
+		else if (p_value=="cubic")
+			sw_mixer->set_mix_interpolation( INTERPOLATION_CUBIC );
 		
 		
 		
@@ -122,8 +125,9 @@ void MixerDialog::save_slot() {
 	
 	switch (sw_mixer->get_mix_interpolation()) {
 		
-		case INTERPOLATION_RAW: config->add_entry("interpolation","none","none,linear"); break;
-		case INTERPOLATION_LINEAR: config->add_entry("interpolation","linear","none,linear"); break;
+		case INTERPOLATION_RAW: config->add_entry("interpolation","none","none,linear,cubic"); break;
+		case INTERPOLATION_LINEAR: config->add_entry("interpolation","linear","none,linear,cubic"); break;
+		case INTERPOLATION_CUBIC: config->add_entry("interpolation","cubic","none,linear,cubic"); break;
 	};
 		
 	config->add_entry( "filters",sw_mixer->use_filters()?"true":"false");
@@ -145,6 +149,7 @@ MixerDialog::MixerDialog(Window *p_parent,ConfigApi *p_config) : Window(p_parent
 	interpolation=mg->add(new ComboBox);
 	interpolation->add_string( "None" );
 	interpolation->add_string( "Linear" );
+	interpolation->add_string( "Cubic" );
 	interpolation->selected_signal.connect(this,&MixerDialog::update_params_i );
 
 	
