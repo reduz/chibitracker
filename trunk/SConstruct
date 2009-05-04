@@ -26,7 +26,7 @@ else:
 
 env.build_nds=NDS
 
-env.Append(LIBS=['interface','tracker','gui','fileio','drivers','player','song','mixer','globals']);
+env.Append(LIBS=['interface','drivers','tracker','gui','fileio','player','song','mixer','globals']);
 
 env.icon_obj=""
 
@@ -104,6 +104,18 @@ else:
 	env.ParseConfig('sdl-config --cflags --libs')
 
 	env.Append(CPPFLAGS=['-DPOSIX_ENABLED','-DSDL_ENABLED','-fno-exceptions']);
+	
+	errorval=os.system("pkg-config alsa --modversion");
+
+        if (errorval):
+                print "ALSA not detected.";
+	else:
+	 	print "ALSA detected.";
+		env.ParseConfig('pkg-config alsa --cflags --libs')
+		env.Append(CPPFLAGS=['-DALSA_ENABLED']);	
+
+	
+	
 #	env['CXX']='g++-2.95'
 
 

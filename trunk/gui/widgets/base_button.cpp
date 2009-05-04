@@ -38,7 +38,7 @@ BaseButton::DrawMode BaseButton::get_draw_mode() {
 	} else {
 		/* determine if pressed or not */
 				
-		bool pressing;
+		bool pressing=false;
 		if (status.press_attempt) {
 			
 			pressing=status.pressing_inside;

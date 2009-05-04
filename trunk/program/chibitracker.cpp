@@ -55,6 +55,7 @@
 #include "signals/signals.h"
 #include "drivers/file_system_dirent.h"
 #include "drivers/file_system_windows.h"
+#include "drivers/note_input_alsa.h"
 
 #include "bundles/combo_box.h"
 #include "bundles/spin_box.h"
@@ -163,6 +164,11 @@ int main(int argc,char *argv[]) {
 
 #endif
 
+#ifdef ALSA_ENABLED
+
+	NoteInputAlsa note_input;
+	
+#endif;
 	/* CONFIG DIR */
 	ensure_config_dir_exists();
 
@@ -215,12 +221,12 @@ int main(int argc,char *argv[]) {
 	
 	CTSkin skin;
 	
-	Window window( painter, timer, &skin );
+	Window * window = new Window( painter, timer, &skin );
 	
-	window.set_size( GUI::Size( DEFAULT_W,DEFAULT_H ) );
+	window->set_size( GUI::Size( DEFAULT_W,DEFAULT_H ) );
 	
 //	InterfaceBase *interface = new InterfaceMini(&window,&mixer_software,&config_file);
-	InterfaceBase *interface = new Interface(&window,&mixer_software,&config_file);
+	InterfaceBase *interface = new Interface(window,&mixer_software,&config_file);
 
 	interface->get_mixer_dialog()->set_mixer( &mixer_software );
 	interface->get_ui_settings_dialog()->set_theme_path( CONFIG_DIR_SKINS );
@@ -230,17 +236,17 @@ int main(int argc,char *argv[]) {
 	/*
 	HBoxContainer * hbc = new HBoxContainer;
 	
-	window.set_root_frame( hbc );
+	window->set_root_frame( hbc );
 
 
 	PatternScreen *ps=hbc->add( new PatternScreen(tracker.editor),1 );
 	
 	*/	
-	window.set_size( GUI::Size( screen->w , screen->h ) );
+	window->set_size( GUI::Size( screen->w , screen->h ) );
 	
 	
-	window.redraw_all();
-	window.update();
+	window->redraw_all();
+	window->update();
 	
 	/* LOAD THING */
 
@@ -268,8 +274,12 @@ int main(int argc,char *argv[]) {
 	SDL_Event event;
 	Uint32 last_click_tick=0;
 	bool can_dblclick=false;
-	while((!done) && (SDL_WaitEvent(&event))) {
-		
+	while(!done) {
+	
+	
+		if (SDL_WaitEvent(&event)==0)
+			continue;
+			
 		do {
 		
 			switch(event.type) {
@@ -280,9 +290,9 @@ int main(int argc,char *argv[]) {
 					printf("??\n");	
 		
 					screen = SDL_SetVideoMode  (event.resize.w,event.resize.h, 32, flags);
-					window.set_size( GUI::Size(event.resize.w,event.resize.h ) );
-					window.redraw_all();
-					window.update();
+					window->set_size( GUI::Size(event.resize.w,event.resize.h ) );
+					window->redraw_all();
+					window->update();
 					
 					break;
 				case SDL_KEYUP:
@@ -310,7 +320,7 @@ int main(int argc,char *argv[]) {
 	#endif
 					}
 					
-					window.key( event.key.keysym.unicode, keycode_sdl_translator.get_code(event.key.keysym.sym), event.key.state==SDL_PRESSED,false, mod );
+					window->key( event.key.keysym.unicode, keycode_sdl_translator.get_code(event.key.keysym.sym), event.key.state==SDL_PRESSED,false, mod );
 					
 					
 					if (event.key.keysym.sym==SDLK_F1) {
@@ -337,68 +347,49 @@ int main(int argc,char *argv[]) {
 				case SDL_MOUSEBUTTONDOWN: {
 					
 					
-					do {
+					Uint32 last_click_delta=0;
+					
+					
+					if (event.button.type==SDL_MOUSEBUTTONDOWN && event.button.button==BUTTON_LEFT) {
 						
-						Uint32 last_click_delta=0;
-						
-						
-						if (event.button.type==SDL_MOUSEBUTTONDOWN && event.button.button==BUTTON_LEFT) {
-							
-							last_click_delta=SDL_GetTicks()-last_click_tick;
-							last_click_tick=SDL_GetTicks();
-						}
-						
-																	
-						SDLMod	mod_state=SDL_GetModState();
-		
-						unsigned int mod=0;
-						
-						if (  mod_state & (KMOD_LSHIFT|KMOD_RSHIFT))
-							mod|=GUI::KEY_MASK_SHIFT;
-						
-						if (  mod_state & (KMOD_LALT|KMOD_RALT))
-							mod|=GUI::KEY_MASK_ALT;
-						
-						if (  mod_state & (KMOD_LCTRL|KMOD_RCTRL))
-							mod|=GUI::KEY_MASK_CTRL;
-										
-						if (  mod_state & (KMOD_LMETA|KMOD_RMETA))
-							mod|=GUI::KEY_MASK_META;
-						
-						
-						window.mouse_button( GUI::Point( event.button.x, event.button.y ), event.button.button, event.button.type==SDL_MOUSEBUTTONDOWN, mod );
-						
-						if (can_dblclick && last_click_delta<250 && event.button.type==SDL_MOUSEBUTTONDOWN && event.button.button==BUTTON_LEFT) {
-							window.mouse_doubleclick( GUI::Point( event.button.x, event.button.y ), mod );
-							can_dblclick=false;
-		
-						} else
-							can_dblclick=true;
-						
-					} while (SDL_PeepEvents(&event,1,SDL_GETEVENT,SDL_EVENTMASK(SDL_MOUSEMOTION))>0);
+						last_click_delta=SDL_GetTicks()-last_click_tick;
+						last_click_tick=SDL_GetTicks();
+					}
+					
+																
+					SDLMod	mod_state=SDL_GetModState();
 	
-						
+					unsigned int mod=0;
+					
+					if (  mod_state & (KMOD_LSHIFT|KMOD_RSHIFT))
+						mod|=GUI::KEY_MASK_SHIFT;
+					
+					if (  mod_state & (KMOD_LALT|KMOD_RALT))
+						mod|=GUI::KEY_MASK_ALT;
+					
+					if (  mod_state & (KMOD_LCTRL|KMOD_RCTRL))
+						mod|=GUI::KEY_MASK_CTRL;
+									
+					if (  mod_state & (KMOD_LMETA|KMOD_RMETA))
+						mod|=GUI::KEY_MASK_META;
 					
 					
+					window->mouse_button( GUI::Point( event.button.x, event.button.y ), event.button.button, event.button.type==SDL_MOUSEBUTTONDOWN, mod );
+					
+					if (can_dblclick && last_click_delta<250 && event.button.type==SDL_MOUSEBUTTONDOWN && event.button.button==BUTTON_LEFT) {
+						window->mouse_doubleclick( GUI::Point( event.button.x, event.button.y ), mod );
+						can_dblclick=false;
+	
+					} else
+						can_dblclick=true;
+											
 				} break;
 					
 				case SDL_MOUSEMOTION:
 	
 					can_dblclick=false; //can't doubleclick! wah wah wah
-					/* Motion compensation, in case there are MANY motion events pending */
-					SDL_Event compensator;
-					
-					while (SDL_PeepEvents(&compensator,1,SDL_GETEVENT,SDL_EVENTMASK(SDL_MOUSEMOTION))>0) {
-						
-						event.motion.xrel+=compensator.motion.xrel;
-						event.motion.yrel+=compensator.motion.yrel;
-						event.motion.state=compensator.motion.state;
-						event.motion.x=compensator.motion.x;
-						event.motion.y=compensator.motion.y;
-					}
-	
-					
-					window.mouse_motion( GUI::Point( event.motion.x, event.motion.y ), GUI::Point( event.motion.xrel, event.motion.yrel ), event.motion.state );
+					/* Motion compensation, in case there are MANY motion events pending */					
+					window->mouse_motion( GUI::Point( event.motion.x, event.motion.y ), GUI::Point( event.motion.xrel, event.motion.yrel ), event.motion.state );
 					break;
 					
 				case SDL_USEREVENT: {
@@ -422,7 +413,7 @@ int main(int argc,char *argv[]) {
 
 //		printf("check updates! - %i\n",i++);
 		timer->loop_iterate();
-		window.check_for_updates();
+		window->check_for_updates();
 		//SDL_UpdateRect   (screen, 0, 0, 0, 0);
 		
 		done=interface->must_quit();
@@ -442,6 +433,7 @@ int main(int argc,char *argv[]) {
 	
 	//delete interface
 	delete interface;
+	delete window;
 	
 	//delete SDL stuff
 	delete timer;

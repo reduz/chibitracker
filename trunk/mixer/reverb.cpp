@@ -540,7 +540,7 @@ Reverb::~Reverb() {
 	
 	
 	if (reverb_buffer)
-		delete reverb_buffer;
+		delete[] reverb_buffer;
 	
 	delete current_params;
 

@@ -17,6 +17,9 @@
 #include "interface_logos.h"
 #include "mixer/sound_driver_manager.h"
 #include "widgets/text_view.h"
+#include "tracker/note_input.h"
+
+
 void Interface::update_title_bar() {
 
 	String title="ChibiTracker v"+String::num(VERSION_MAJOR)+"."+String::num(VERSION_MINOR)+String(VERSION_REV);
@@ -236,6 +239,7 @@ void Interface::interface_update_timer_callback() {
 	if (mem_usage!=memory_label->get_text())
 		memory_label->set_text( mem_usage );
 	
+	
 	if (tabs->get_selected_tab()==SCREEN_PATTERN)
 		pattern_screen->update_timer_callback();
 	if (tabs->get_selected_tab()==SCREEN_SAMPLES)
@@ -243,11 +247,46 @@ void Interface::interface_update_timer_callback() {
 	if (tabs->get_selected_tab()==SCREEN_INSTRUMENTS)
 		instrument_screen->update_timer_callback();
 	
+	if (NoteInput::get_singleton()) {
+	
+		while (NoteInput::get_singleton()->has_notes_pending()) {
+		
+			NoteInput::Note n=NoteInput::get_singleton()->pop_note();
+			printf("note %i-%i-%i\n",n.note,n.vol,n.off);
+			
+			switch( tabs->get_selected_tab() ) {
+			
+				case SCREEN_PATTERN: {
+				
+				
+				} break;
+				case SCREEN_SAMPLES: {
+				
+					if (!n.off)
+						tracker.virtual_piano->sample_press_key(n.note);
+					else
+						tracker.virtual_piano->sample_stop(n.note);
+					
+				} break;
+				case SCREEN_INSTRUMENTS: {
+				
+					if (!n.off)
+						tracker.virtual_piano->instrument_press_key(n.note,n.vol);
+					else
+						tracker.virtual_piano->instrument_stop_key(n.note);
+				} break;
+			
+			}
+		}
+	}
+	
 	sound_driver_dialog->check_driver_status();
 	
 	
 	vu->compute( window->get_timer()->get_interval( timer ) );
 	vu->set( SoundDriverManager::get_driver()->get_max_level_l(), SoundDriverManager::get_driver()->get_max_level_r() );
+	
+	
 }
 
 void Interface::status_override(String p_message) {
@@ -1082,7 +1121,7 @@ Interface::Interface(Window *p_window,Mixer *p_mixer,ConfigApi *p_config) : trac
 	path_dialog->paths_changed_signal.connect( this, &Interface::paths_changed );
 	
 	
-	window->get_timer()->create_timer( Method(this, &Interface::interface_update_timer_callback ),60 );
+	timer = window->get_timer()->create_timer( Method(this, &Interface::interface_update_timer_callback ),60 );
 	pattern_screen->get_pattern_editor()->instrument_changed_signal.connect(this, &Interface::instrument_mask_changed );
 	sample_screen->instrument_changed_signal.connect(this, &Interface::instrument_mask_changed );
 	

@@ -225,6 +225,7 @@ VirtualPiano::VirtualPiano(Player *p_player,Mixer *p_mixer){
 	sample_playing=false;
 	player=p_player;
 	mixer=p_mixer;
+	sample_voice=-1;
 }
 VirtualPiano::~VirtualPiano(){
 }
