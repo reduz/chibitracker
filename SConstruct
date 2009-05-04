@@ -7,41 +7,85 @@ import string;
 import sys
 
 palmos=False;
-win32=False
+win_enabled=False
 
-win32cross=False
-win32msvc=False
-NDS=False
-#env = Environment(CC='arm-palmos-gcc',CXX='arm-palmos-g++' , RANLIB='arm-palmos-ranlib', AR='arm-palmos-ar', CPPPATH=['#/globals','#.']);
-
-if (NDS):
-	env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['-DANSIC_LIBS_ENABLED'],ENV=os.environ);
-
-elif (win32 and win32cross):
-	env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['-DANSIC_LIBS_ENABLED','-g3','-Wall','-fstrict-aliasing'],CXX='i586-mingw32msvc-g++',RANLIB='i586-mingw32msvc-ranlib',LD='i586-mingw32msvc-ld',CC='i586-mingw32msvc-gcc',AR='i586-mingw32msvc-ar' );
-elif (win32 and win32msvc):
-	env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['/DANSIC_LIBS_ENABLED'],ENV=os.environ);
+if (os.name=="nt"):
+	wind32=True
+	if (os.getenv("MINGW_PREFIX")!=None):
+		env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['-DANSIC_LIBS_ENABLED','-DWINDOWS_ENABLED','-DSDL_ENABLED'],ENV=os.environ,tools=['mingw']);
+		env.Append(CPPFLAGS=['-I'+os.getenv("MINGW_PREFIX")+'\\include\\SDL']);
+		env.Append(LIBS=['mingw32','SDLmain','SDL']);
+		env.icon_obj="cticon.o"
+		env["DEBUG_CXXFLAGS"]=['-g3','-Wall']
+		env["DEBUG_LINKFLAGS"]=[]
+		env["RELEASE_CXXFLAGS"]=['-O2','-ffast-math']
+		env["RELEASE_LINKFLAGS"]=[]
+		env["PROFILE_CXXFLAGS"]=['-pg','-g3','-Wall']
+		env["PROFILE_LINKFLAGS"]=['-pg']
+		
+	else:
+		env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['/DANSIC_LIBS_ENABLED','/DWINDOWS_ENABLED'],ENV=os.environ);
+#		env.Append(CPPFLAGS=['/IC:\Program Files\Microsoft Visual Studio 8\VC\include\SDL','/D_REENTRANT','/DWINDOWS_ENABLED','/Zi','/Yd','/MT','/Gd']);
+#	        env.Append(LIBS=['SDLmain','SDL']);
+#		env.Append(LINKFLAGS=['/FORCE:MULTIPLE','/DEBUG']);
+#		env["DEBUG_CXXFLAGS"]=['-g3','-Wall']
+#		env["DEBUG_LINKFLAGS"]=[]
+#		env["RELEASE_CXXFLAGS"]=['-O2','-ffast-math']
+#		env["RELEASE_LINKFLAGS"]=[]
+#		env["PROFILE_CXXFLAGS"]=['-pg','-g3','-Wall']
+#		env["PROFILE_LINKFLAGS"]=['-pg']
+	
+	win_enabled=True		
 else:
+	#unix
 	env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['-DANSIC_LIBS_ENABLED'],ENV=os.environ);
+	errorval=os.system("sdl-config --version");
+
+        if (errorval):
+                print "Error: cant execute sdl-config, make sure SDL is installed";
+                exit(255);
+	else:
+		print("libSDL Detected");
+
+	env.ParseConfig('sdl-config --cflags --libs')
+
+	env.Append(CPPFLAGS=['-DPOSIX_ENABLED','-DSDL_ENABLED','-fno-exceptions']);
+	
+	errorval=os.system("pkg-config alsa --modversion");
+
+        if (errorval):
+                print "ALSA not detected.";
+	else:
+	 	print "ALSA detected.";
+		env.ParseConfig('pkg-config alsa --cflags --libs')
+		env.Append(CPPFLAGS=['-DALSA_ENABLED']);	
+
+	env["DEBUG_CXXFLAGS"]=['-g3','-Wall']
+	env["DEBUG_LINKFLAGS"]=[]
+	env["RELEASE_CXXFLAGS"]=['-O2','-ffast-math']
+	env["RELEASE_LINKFLAGS"]=[]
+	env["PROFILE_CXXFLAGS"]=['-pg','-g3','-Wall']
+	env["PROFILE_LINKFLAGS"]=['-pg']
+		
+NDS=False
+
+#if (NDS):
+#	env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['-DANSIC_LIBS_ENABLED'],ENV=os.environ);
 
 env.build_nds=NDS
 
-env.Append(LIBS=['interface','drivers','tracker','gui','fileio','player','song','mixer','globals']);
+env["LIBS"]=['interface','drivers','tracker','gui','fileio','player','song','mixer','globals']+env["LIBS"]
 
 env.icon_obj=""
 
 opts=Options()
-opts.Add('optimize', 'Optimize.', 0)
-opts.Add('debug', 'Add debug symbols.', 1)
-opts.Add('profile', 'profile', 0)
+opts.Add('target', 'Target: (debug/profile/release).', "debug")
 opts.Add('prefix', 'The installation prefix', '/usr/local/')
 opts.Add('meta_as_alt', 'META Key works as ALT (MAC keyboards)', 0)
-opts.Add('DEVKITPRO', 'the DEVKITPRO env variable', '/usr/local/devkitPro')
-opts.Add('DEVKITARM', 'the DEVKITARM env variable', '/usr/local/devkitPro/devkitARM')
 
 opts.Update(env)
 Help(opts.GenerateHelpText(env))
-
+"""
 if (NDS):
 
 	os.environ['DEVKITPRO'] = env['DEVKITPRO']
@@ -71,48 +115,8 @@ if (NDS):
 	env.env_arm7.Append(CPPPATH=env["DEVKITPRO"]+'/libnds/include')
 	env.env_arm7.Append(LINKFLAGS=['-specs=ds_arm7.specs','-Wl,-Map,output7.map'])	
 	env.env_arm7.Append(LIBPATH=env["DEVKITPRO"]+'/libnds/lib')
+"""
 
-elif (win32cross and win32):
-
-	env.Append(CPPFLAGS=['-I/usr/i586-mingw32msvc/include/SDL','-D_REENTRANT','-DWINDOWS_ENABLED','-DSDL_ENABLED']);
-	env.Append(LINKFLAGS=['-L/usr/i586-mingw32msvc/lib','-mwindows']);
-	env.Append(LIBS=['mingw32','SDLmain','SDL']);
-	env.icon_obj="cticon.o"
-
-elif (win32):
-	if (win32msvc):
-
-		env.Append(CPPFLAGS=['/IC:\Program Files\Microsoft Visual Studio 8\VC\include\SDL','/D_REENTRANT','/DWINDOWS_ENABLED','/Zi','/Yd','/MT','/Gd']);
-	        env.Append(LIBS=['SDLmain','SDL']);
-		env.Append(LINKFLAGS=['/FORCE:MULTIPLE','/DEBUG']);
-        else:
-		env.Append(CPPFLAGS=['-IC:\\MingW\\include\\SDL','-D_REENTRANT','-DWINDOWS_ENABLED','-DSDL_ENABLED']);
-		env.Append(LINKFLAGS=['-mconsole']);
-	        env.Append(LIBS=['mingw32','SDLmain','SDL']);
-		env.icon_obj="cticon.o"
-
-else:
-	#UNIX, needs some detection
-	errorval=os.system("sdl-config --version");
-
-        if (errorval):
-                print "Error: cant execute sdl-config, make sure SDL is installed";
-                exit(255);
-	else:
-		print("libSDL Detected");
-
-	env.ParseConfig('sdl-config --cflags --libs')
-
-	env.Append(CPPFLAGS=['-DPOSIX_ENABLED','-DSDL_ENABLED','-fno-exceptions']);
-	
-	errorval=os.system("pkg-config alsa --modversion");
-
-        if (errorval):
-                print "ALSA not detected.";
-	else:
-	 	print "ALSA detected.";
-		env.ParseConfig('pkg-config alsa --cflags --libs')
-		env.Append(CPPFLAGS=['-DALSA_ENABLED']);	
 
 	
 	
@@ -122,15 +126,17 @@ else:
 env.Append(LIBPATH=['#song','#mixer','#gui','#drivers','#fileio','#tracker','#globals','#player','#interface']);
 
 
-if (not win32msvc):
-	print env['optimize']
-	if (int(env['debug']) and not int(env['optimize'])):
-	        env.Append(CXXFLAGS=['-g3','-Wall']);
-	if (int(env['profile'])):
-	        env.Append(CXXFLAGS=['-pg']);
-		env.Append(LINKFLAGS=['-pg']);
-	if (int(env['optimize'])):
-		env.Append(CXXFLAGS=['-O2','-ffast-math']);
+if (env['target']=='debug'):
+        env.Append(CXXFLAGS=env["DEBUG_CXXFLAGS"]);
+        env.Append(LINKFLAGS=env["DEBUG_LINKFLAGS"]);
+	
+if (env['target']=='profile'):
+        env.Append(CXXFLAGS=env["PROFILE_CXXFLAGS"]);
+        env.Append(LINKFLAGS=env["PROFILE_LINKFLAGS"]);
+
+if (env['target']=='release'):
+        env.Append(CXXFLAGS=env["RELEASE_CXXFLAGS"]);
+        env.Append(LINKFLAGS=env["RELEASE_LINKFLAGS"]);
 
 if ((env['meta_as_alt'])):
 	env.Append(CXXFLAGS=['-DMETA_AS_ALT']);
