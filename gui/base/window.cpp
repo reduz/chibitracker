@@ -559,7 +559,7 @@ void Window::mouse_button(const Point& p_pos, int p_button,bool p_press,int p_mo
 }
 void Window::mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask) {
 
-	
+
 	if (!parent && (root->focus!=this)) {
 		//deliver to whoever has the focus, if root does not have it
 		
@@ -1118,6 +1118,8 @@ void Window::remove_from_modal_stack() {
 
 	if (mode!=MODE_MODAL && mode!=MODE_POPUP)
 		return; //otherwise it will never be in the modal stack
+	if (!root)
+		return;
 	
 
 	ModalStack * m = root->root_data->modal_stack;
@@ -1247,12 +1249,9 @@ Window::~Window() {
 	
 	
 	while (childs) {
-	
+		
 		GUI_DELETE(childs);	
 	}
-	
-	
-	
 	
 	if (parent) {
 		

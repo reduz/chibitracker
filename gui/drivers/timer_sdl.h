@@ -37,7 +37,7 @@ class TimerSDL : public Timer {
 		bool active;
 		SDL_TimerID sdl_timer;
 		Uint32 last_iter;
-		TimerData() { active=false; interval=0; id=-1; last_iter=0; }
+		TimerData() { active=false; interval=0; id=-1; last_iter=1; }
 		
 	};
 	

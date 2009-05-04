@@ -161,7 +161,7 @@ WavSaverDialog::WavSaverDialog(Window *p_parent,Tracker *p_tracker) : FileDialog
 
 WavSaverDialog::~WavSaverDialog() {
 	
-	delete save_progress;
+	//delete save_progress;
 }
 
 

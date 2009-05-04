@@ -726,6 +726,7 @@ Mixer_Soft::Mixer_Soft() {
 	}
 	
 	chorus.ringbuffer_pos=0;
+	chorus.osc_pos=0;
 	chorus.delay_ms=6;
 	chorus.separation_ms=3;
 	chorus.depth_ms10=6,

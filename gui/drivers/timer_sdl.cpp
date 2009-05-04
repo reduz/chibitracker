@@ -122,7 +122,7 @@ unsigned long int TimerSDL::get_tick_ms() {
 
 TimerSDL::TimerSDL(){
 	
-	
+	iteration=0;	
 }
 
 void TimerSDL::stop_all() {
