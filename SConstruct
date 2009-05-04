@@ -31,8 +31,9 @@ env.Append(LIBS=['interface','tracker','gui','fileio','drivers','player','song',
 env.icon_obj=""
 
 opts=Options()
-opts.Add('optimize', 'Optimize.', 1)
-opts.Add('debug', 'Add debug symbols.', 0)
+opts.Add('optimize', 'Optimize.', 0)
+opts.Add('debug', 'Add debug symbols.', 1)
+opts.Add('profile', 'profile', 0)
 opts.Add('prefix', 'The installation prefix', '/usr/local/')
 opts.Add('meta_as_alt', 'META Key works as ALT (MAC keyboards)', 0)
 opts.Add('DEVKITPRO', 'the DEVKITPRO env variable', '/usr/local/devkitPro')
@@ -113,6 +114,9 @@ if (not win32msvc):
 	print env['optimize']
 	if (int(env['debug']) and not int(env['optimize'])):
 	        env.Append(CXXFLAGS=['-g3','-Wall']);
+	if (int(env['profile'])):
+	        env.Append(CXXFLAGS=['-pg']);
+		env.Append(LINKFLAGS=['-pg']);
 	if (int(env['optimize'])):
 		env.Append(CXXFLAGS=['-O2','-ffast-math']);
 
