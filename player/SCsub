@@ -1,0 +1,6 @@
+Import('env');
+Export('env');
+
+targets=['player_data.cpp','player_data_control.cpp','player_data_effects.cpp','player_data_envelopes.cpp','player_data_events.cpp','player_data_filter.cpp','player_data_nna.cpp','player_data_notes.cpp','player_data_reserved.cpp','player_data_utils.cpp','tables.cpp'];
+
+env.Library('player', targets);

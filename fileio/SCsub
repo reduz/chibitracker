@@ -1,0 +1,6 @@
+Import('env');
+Export('env');
+
+targets=['file_format_manager.cpp','loader_it.cpp','loader_it_info.cpp','loader_it_instruments.cpp','loader_it_samples.cpp','loader_it_patterns.cpp','loader_xm.cpp','saver.cpp','saver_it.cpp','loader_wav.cpp','saver_wav.cpp','loader_s3m.cpp','loader_mod.cpp','saver_xm.cpp'];
+
+env.Library('fileio', targets);

@@ -1,0 +1,42 @@
+Installing ChibiTracker:
+-------------------------
+
+**** MAKEFILE IS DEPRECATED ******
+
+To compile ChibiTracker, you need to download the "Scons" build system,
+It is a python-based build system, and it needs Python 2.2 or greater.
+(make sure your /usr/??/bin/python is symliked to the 2.2+ one)
+
+Get this build system from: http://www.scons.org , version 0.9 or greater
+is requiered.
+
+INSTRUCTIONS:
+
+*** To get build options: ***
+
+$ scons --help
+
+*** To build chibitracker ***
+
+$ scons
+
+*** To install chibitracker in /usr/local ***
+
+# sudo scons install
+
+*** To install chibitracker somewhere else add prefix=<path> ***
+
+# sudo scons install prefix=/usr
+
+*  or, for no root
+
+$ scons install prefix=~
+
+  are valid examples
+  
+* To clean the installation
+
+$ scons -c
+
+
+

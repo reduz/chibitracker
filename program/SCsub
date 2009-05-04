@@ -1,0 +1,25 @@
+Import('env')
+
+
+if (env.build_nds):
+
+	ctfiles=['chibitracker_ds.cpp','nds_backends.cpp','chibitracker_ds_stack.s'];
+
+	dst_obj=env.Program('chibitracker_ds', ctfiles);
+	env.bin_targets+=[dst_obj]
+
+	env.env_arm7.Program('chibitracker_ds_arm7.elf','chibitracker_ds_arm7.c')
+
+else:
+
+	ctfiles=['chibitracker.cpp'];
+
+	if (env.icon_obj!=""):
+        	ctfiles+=[env.icon_obj]
+
+	dst_obj=env.Program('chibitracker', ctfiles);
+	env.bin_targets+=[dst_obj]
+	env.Program('chibiconvert', ['chibiconvert.cpp']);
+
+
+

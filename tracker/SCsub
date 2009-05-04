@@ -1,0 +1,6 @@
+Import('env');
+Export('env');
+
+targets=['editor.cpp','editor_insertion.cpp','editor_orderlist.cpp','editor_selection.cpp','editor_undo.cpp','editor_commands.cpp','tracker.cpp','key_bindings.cpp','editor_pattern_keypress.cpp','selection.cpp','virtual_piano.cpp'];
+
+env.Library('tracker', targets);

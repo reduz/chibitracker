@@ -1,0 +1,6 @@
+Import('env');
+Export('env');
+
+targets=['mempool_malloc.cpp','file_access.cpp','sound_driver_sdl.cpp'];
+
+env.Library('drivers', targets);

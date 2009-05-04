@@ -1,0 +1,68 @@
+Must Test: (Player)
+	*Envelope sustain
+	-Fadeout??
+	*Sample vibrato
+	*Filters
+	*Stereo Samples
+	*Volume Ramp	
+	DPDeclicker
+	*Linear Search en pattern...
+	*Next/Prev order?
+	*F7 y play from noseque
+	*Test sample Loading/Saving
+	*Make WAVE loader/saver
+
+Naming:
+	-FileAccessWrapper -> FileAccess
+	-FileAccess -> FileAccessFile
+UI: 
+	*update bugs in nested dialogs
+	*margin of styleboxes dont display well on repaint
+	*wtf is going on with spinboxes in sound config dialgo
+	*Keybinds altalgoetc ademas agrega notas o comandos
+	*move aroudn widgets with arrows
+	*make tabbar focusable
+	-fix stereo
+	-stop song on load another	
+	-check iti and xi loader
+	- But in your tracker, C00 skips past the next pattern if it's on the last
+line
+	*set name (song/samlpe/ins) FIX
+	*play sample in virtual piano FIX
+
+	*i bound raise/lower octave to ctrl+alt+q/a  but nothing happens
+ 
+2. I opened up a 1 pattern loop song of mine and and played it from the
+start. then i clicked play pattern only and it played pattern 0 of a
+different song (angry_pony_blues by decibelter i think)
+
+2a. if i change patterns while my 1 pattern song is loaded it displays the
+patterns from angry pony blues and plays it at the the tempo of MY loaded
+song. it turns out it NEVER displays the 1 pattern of my 1 pattern song when
+I load it. other 1 pattern songs ive written load/display/play correctly
+
+3. not sure if it is a bug, but when a song ends any un-stopped notes will
+continue to play. (I am used to modplug where when the song starts over it
+starts as if being played for the first time)
+
+4. clicked on a sample once after maximizing/restoring window repeatedly
+while playing 2-minute-show and it closed, this problem has occured multiple
+times in the same conditions. further testing shows that
+maximizing/restoring didnt play a role, as it crashed when i click on ANY
+sample while the song is playing
+
+4a. on a different song (1channel) click samples slowly was fine, but then i
+clicked on them fast, going between many samples fast and it crashed. this
+problem has been repeated ONLY when the song is playing. after further
+testing, this ALWAYS HAPPENS for any song while it is playing. This error
+also occurs for zooming in on samples
+
+
+[01:11] <coda> cleanup samples didn't cleanup the samples
+[01:12] <coda> they're all still there
+-follow songs
+
+[02:38] <CategoryApl> in the sample window it doesn't sound when testing
+sample play, but in the instruments tab it does - vol of rtpiano
+[02:44] <reduz> in linux and unixes, it's normal that folders are sorted by
+case sensitivity

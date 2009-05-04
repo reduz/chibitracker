@@ -1,0 +1,70 @@
+
+#ifndef SAMPLE_DEFS_H
+#define SAMPLE_DEFS_H
+
+#include "config.h"
+
+enum Sample_Loop_Type {
+	
+	LOOP_NONE,
+	LOOP_FORWARD,
+	LOOP_BIDI
+};
+
+//#define INVALID_SAMPLE_ID -1
+
+#define MIXING_FRAC_BITS_MACRO 13
+#define MIXING_FRAC_BITS_TEXT "13"
+// 1<<9 - 1
+#define MIXING_FRAC_BITS_MASK_TEXT "8191" 
+
+enum MixConstants {
+	MIXING_FRAC_BITS=MIXING_FRAC_BITS_MACRO,
+	MIXING_FRAC_LENGTH=(1<<MIXING_FRAC_BITS),
+	MIXING_FRAC_MASK=MIXING_FRAC_LENGTH-1,
+	MIXING_VOL_FRAC_BITS=8,
+	MIXING_FREQ_FRAC_BITS=8
+};
+
+enum FilterConstants {
+	FILTER_SHIFT=12,
+	FILTER_LENGTH=(1<<FILTER_SHIFT)
+};
+
+
+enum InterpolationType {
+	INTERPOLATION_RAW,
+	INTERPOLATION_LINEAR,
+	INTERPOLATION_CUBIC
+};
+	
+enum PanConstants {
+	
+	PAN_BITS=8, // 0 .. 256
+	PAN_LEFT=0,
+	PAN_RIGHT=((1<<PAN_BITS)-1), // 255
+	PAN_CENTER=PAN_RIGHT/2, // 128
+	PAN_SURROUND=512
+};
+
+enum MixerVolConstants {
+	VOL_MAX=512,
+	VOL_RAMP_BITS=9,
+	VOL_SHIFT=2
+			
+	
+};	
+
+enum StereoCannels {
+	CHAN_LEFT,
+	CHAN_RIGHT
+};
+
+#define FIRST_SAMPLE_DECLICK_THRESHOLD 1000
+#define FIRST_SAMPLE_RAMP_LEN 32
+
+typedef signed char Frame8;
+typedef signed short Frame16;
+
+
+#endif
