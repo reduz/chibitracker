@@ -34,10 +34,13 @@ if (os.name=="nt"):
 #		env["RELEASE_LINKFLAGS"]=[]
 #		env["PROFILE_CXXFLAGS"]=['-pg','-g3','-Wall']
 #		env["PROFILE_LINKFLAGS"]=['-pg']
+		
+		env.icon_obj=""
 	
 	win_enabled=True		
 else:
 	#unix
+
 	env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['-DANSIC_LIBS_ENABLED'],ENV=os.environ);
 	errorval=os.system("sdl-config --version");
 
@@ -66,6 +69,8 @@ else:
 	env["RELEASE_LINKFLAGS"]=[]
 	env["PROFILE_CXXFLAGS"]=['-pg','-g3','-Wall']
 	env["PROFILE_LINKFLAGS"]=['-pg']
+	env.icon_obj=""
+
 		
 NDS=False
 
@@ -76,7 +81,6 @@ env.build_nds=NDS
 
 env["LIBS"]=['interface','drivers','tracker','gui','fileio','player','song','mixer','globals']+env["LIBS"]
 
-env.icon_obj=""
 
 opts=Options()
 opts.Add('target', 'Target: (debug/profile/release).', "debug")
