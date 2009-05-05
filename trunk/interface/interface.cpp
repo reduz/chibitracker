@@ -26,7 +26,7 @@ void Interface::update_title_bar() {
 	if (tracker.song->get_name()[0]!=0) 
 		title+=" - " +String(tracker.song->get_name());
 	else
-		title+=" - (c) 2001-2007 Juan Linietsky";
+		title+=" - (c) 2001-2009 Juan Linietsky";
 	
 	window->get_painter()->set_display_title(title,"chibi");
 }
