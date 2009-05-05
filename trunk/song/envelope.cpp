@@ -72,6 +72,39 @@ int Envelope::get_height_at_pos(int pos) {
 	return begin_y+((pos-begin_x)*(end_y-begin_y))/(xdif?xdif:1);
 }
 
+/*
+int Envelope::get_fx_height_at_pos(int pos) {
+
+	if (node_count && pos>node[node_count-1].tick_offset)
+		return node[node_count-1].value<<FX_HEIGHT_BITS;
+	
+	int begin_x,begin_y;
+	int end_x,end_y,xdif;
+	int count=0;
+	int limit=-1;
+
+	if (node_count<2) return NO_POINT;
+
+	while ((count<node_count) && (limit==-1)) {
+
+		if (node[count].tick_offset>=pos) limit=count;
+		count++;
+	}
+
+	if (pos==0) return node[0].value<<FX_HEIGHT_BITS;
+
+	if (limit==-1) return NO_POINT;
+
+	begin_x=node[limit-1].tick_offset;
+	end_x=node[limit].tick_offset;
+	begin_y=node[limit-1].value;
+	end_y=node[limit].value;
+
+	xdif=end_x-begin_x;
+	return (begin_y<<FX_HEIGHT_BITS)+((pos-begin_x)*(end_y-begin_y)*(int)(1<<FX_HEIGHT_BITS))/(xdif?xdif:1);
+}
+*/
+
 float Envelope::get_interp_height_at_pos(float pos) {
 
 	if (node_count && pos>node[node_count-1].tick_offset)

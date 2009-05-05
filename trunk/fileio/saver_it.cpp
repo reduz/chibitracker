@@ -341,16 +341,16 @@ void Saver_IT::write_instrument_internal(Instrument *p_aux_instr) {
 	file->store_byte(0);
 	file->store_byte_array((Uint8*)instr->get_name(),26);
 
-	auxbyte=instr->get_filter_default_cutoff()*2;
+	auxbyte=instr->get_filter_default_cutoff();
 	if (auxbyte>0x7F)
 		auxbyte=0x7F;
 
 	auxbyte|=instr->filter_use_default_cutoff()?0x80:0;
-	file->store_byte(auxbyte); // filter.. NOT implemented
+	file->store_byte(auxbyte); // filter..
 
 	auxbyte=instr->get_filter_default_resonance();
 	auxbyte|=instr->filter_use_default_resonance()?0x80:0;
-	file->store_byte(auxbyte); // filter.. NOT implemented
+	file->store_byte(auxbyte); // filter..
 
 	file->store_byte(0); // midi channel.. NOT implemented
 	file->store_byte(0); // midi program.. NOT implemented
@@ -366,7 +366,9 @@ void Saver_IT::write_instrument_internal(Instrument *p_aux_instr) {
 
 	tmpint=(BITBOOL(instr->get_volume_envelope()->is_enabled())) |
                (BITBOOL(instr->get_volume_envelope()->is_loop_enabled())<<1) |
-               (BITBOOL(instr->get_volume_envelope()->is_sustain_loop_enabled())<<2);
+               (BITBOOL(instr->get_volume_envelope()->is_sustain_loop_enabled())<<2)|
+               (BITBOOL(instr->get_volume_envelope()->is_carry_enabled())<<3);
+               
 	file->store_byte(tmpint);
 	file->store_byte(instr->get_volume_envelope()->get_node_count());
 	file->store_byte(instr->get_volume_envelope()->get_loop_begin());
@@ -390,7 +392,8 @@ void Saver_IT::write_instrument_internal(Instrument *p_aux_instr) {
 
 	tmpint=(BITBOOL(instr->get_pan_envelope()->is_enabled())) |
                (BITBOOL(instr->get_pan_envelope()->is_loop_enabled())<<1) |
-               (BITBOOL(instr->get_pan_envelope()->is_sustain_loop_enabled())<<2);
+               (BITBOOL(instr->get_pan_envelope()->is_sustain_loop_enabled())<<2) |
+               (BITBOOL(instr->get_pan_envelope()->is_carry_enabled())<<3);
 	file->store_byte(tmpint);
 	file->store_byte(instr->get_pan_envelope()->get_node_count());
 	file->store_byte(instr->get_pan_envelope()->get_loop_begin());
@@ -417,6 +420,7 @@ void Saver_IT::write_instrument_internal(Instrument *p_aux_instr) {
 	tmpint=(BITBOOL(instr->get_pitch_filter_envelope()->is_enabled())) |
                (BITBOOL(instr->get_pitch_filter_envelope()->is_loop_enabled())<<1) |
                (BITBOOL(instr->get_pitch_filter_envelope()->is_sustain_loop_enabled())<<2) |
+               (BITBOOL(instr->get_pitch_filter_envelope()->is_carry_enabled())<<3) |
                (BITBOOL(instr->is_pitch_use_as_filter())<<7);
 
 	file->store_byte(tmpint);
