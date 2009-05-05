@@ -70,7 +70,7 @@ class Envelope {
 public:
 	enum {
 		
-		NO_POINT=-5000
+		NO_POINT=-5000,
 	};
 	
 	void set_max(Sint8 p_max) { max_value=p_max; }

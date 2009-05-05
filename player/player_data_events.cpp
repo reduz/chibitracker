@@ -275,8 +275,10 @@ void Player::update_mixer() {
 
 			if (!v.process_envelope(v.instrument_ptr->get_volume_envelope(),&v.volume_envelope_ctrl))
 				v.volume_envelope_ctrl.value=64;
+
 			if (!v.process_envelope(v.instrument_ptr->get_pan_envelope(),&v.panning_envelope_ctrl))
 				v.panning_envelope_ctrl.value=0;
+			
 			if (!v.process_envelope(v.instrument_ptr->get_pitch_filter_envelope(),&v.pitch_envelope_ctrl))
 				v.pitch_envelope_ctrl.value=0;
 				
@@ -418,11 +420,22 @@ void Player::update_mixer() {
 			if (!v.instrument_ptr->is_pitch_use_as_filter()) {
 			
 				
-				if (((Uint16)v.note<<1)+pe_value<=0) pe_value=-(v.note<<1);
+				if (((Uint16)v.note<<1)+pe_value<=0) 
+					pe_value=-(v.note<<1);
 
 				int smp_c5=SampleManager::get_singleton()->get_c5_freq( v.sample_ptr->get_sample_data());
 				
-				aux_pitch_diff=get_period(((Uint16)v.note<<1)+pe_value,smp_c5)-get_period(((Uint16)v.note<<1),smp_c5);
+				int base=get_period(((Uint16)v.note<<1),smp_c5);
+				int env=get_period(((Uint16)v.note<<1)+pe_value,smp_c5);
+				/*
+				int env_next=(pe_value<0)?get_period(((Uint16)(v.note-1)<<1)+pe_value,smp_c5):get_period(((Uint16)(v.note+1)<<1)+pe_value,smp_c5);
+				
+				env=env+(abs(v.pitch_envelope_ctrl.value)&((1<<Envelope::FX_HEIGHT_BITS)-1))*(env_next-env)/(1<<Envelope::FX_HEIGHT_BITS);
+				
+				printf("env %i\n",env);
+				*/				
+				aux_pitch_diff=env-base;
+
 
 				if ( ((int)tmp_mixer_period-aux_pitch_diff)<0 ) aux_pitch_diff=0;
 				
