@@ -56,7 +56,7 @@ else:
 	
 	errorval=os.system("pkg-config alsa --modversion");
 
-        if (errorval):
+        if (True or errorval):
                 print "ALSA not detected.";
 	else:
 	 	print "ALSA detected.";

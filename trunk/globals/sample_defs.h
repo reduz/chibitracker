@@ -27,7 +27,7 @@ enum MixConstants {
 };
 
 enum FilterConstants {
-	FILTER_SHIFT=12,
+	FILTER_SHIFT=16,
 	FILTER_LENGTH=(1<<FILTER_SHIFT)
 };
 

@@ -687,5 +687,24 @@ void Editor::set_current_note(const Note& p_note) {
 	
 }
 
+
+void Editor::chord_mode_enter() {
+
+
+}
+void Editor::chord_mode_press_note(int p_note) {
+
+
+}
+void Editor::chord_mode_release_note(int p_note) {
+
+
+}
+void Editor::chord_mode_cancel() {
+
+
+}
+
+
 Editor::~Editor(){
 }
