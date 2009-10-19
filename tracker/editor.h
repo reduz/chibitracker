@@ -451,6 +451,14 @@ public:
         void channel_solo_toggle(int p_track);
         void current_channel_mute_toggle();
         void current_channel_solo_toggle();
+        
+        /* CHORD MODE */
+        
+        void chord_mode_enter();
+        void chord_mode_press_note(int p_note);
+        void chord_mode_release_note(int p_note);
+        void chord_mode_cancel();
+        
 	/* REDRAW OPTIMIZATION CHECKS */
 
 	bool flag_redraw_row() { return (redraw_flags & TRACKER_REDRAW_ROW); };
