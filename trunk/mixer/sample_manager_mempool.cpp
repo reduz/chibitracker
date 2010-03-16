@@ -304,13 +304,13 @@ void SampleManager_MemPool::set_chunk(Sample_ID p_id,Sint32 p_index,void *p_data
 	int samples_to_copy=p_data_len*(smp->stereo?2:1);
 	if (smp->is_16bits) {
 		Frame16 *src=(Frame16*)p_data;
-		Frame16 *dst=&((Frame16*)data)[p_index+1];
+		Frame16 *dst=&((Frame16*)data)[p_index+(smp->stereo?2:1)];
 		for (int i=0;i<samples_to_copy;i++)
 			dst[i]=src[i];
 	} else {
 
 		Frame8 *src=(Frame8*)p_data;
-		Frame8 *dst=&((Frame8*)data)[p_index+1];
+		Frame8 *dst=&((Frame8*)data)[p_index+(smp->stereo?2:1)];
 		for (int i=0;i<samples_to_copy;i++)
 			dst[i]=src[i];
 
@@ -420,11 +420,11 @@ void *SampleManager_MemPool::get_data(Sample_ID p_id) {
 	ERR_FAIL_COND_V(!data,NULL);
 	
 	if (smp->is_16bits) {
-		Frame16 *src=&((Frame16*)data)[1];
+		Frame16 *src=&((Frame16*)data)[smp->stereo?2:1];
 		return src;
 	} else {
 
-		Frame8 *src=&((Frame8*)data)[1];
+		Frame8 *src=&((Frame8*)data)[smp->stereo?2:1];
 		return src;
 	}
 }
@@ -498,7 +498,7 @@ void SampleManager_MemPool::set_data(Sample_ID p_id, int p_sample, Sint16 p_data
 	
 	ERR_FAIL_COND( p_sample<-1 || (p_sample>smp->size+1));
 	ERR_FAIL_COND(p_channel<0);
-	
+
 	if (smp->stereo) {
 		
 		ERR_FAIL_COND(p_channel>1);
@@ -578,13 +578,13 @@ void SampleManager_MemPool::get_chunk(Sample_ID p_id,Sint32 p_index,void *p_data
 	
 	if (smp->is_16bits) {
 		Frame16 *dst=(Frame16*)p_data;
-		Frame16 *src=&((Frame16*)data)[p_index+1];
+		Frame16 *src=&((Frame16*)data)[p_index+(smp->stereo?2:1)];
 		for (int i=0;i<p_data_len;i++)
 			dst[i]=src[i];
 	} else {
 
 		Frame8 *dst=(Frame8*)p_data;
-		Frame8 *src=&((Frame8*)data)[p_index+1];
+		Frame8 *src=&((Frame8*)data)[p_index+(smp->stereo?2:1)];
 		for (int i=0;i<p_data_len;i++)
 		dst[i]=src[i];
 	}
