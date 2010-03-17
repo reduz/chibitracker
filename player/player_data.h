@@ -83,7 +83,7 @@ class Player {
 
 	enum {
 		
-		MAX_VOICES=128
+		MAX_VOICES=256
 	};
 	
 	struct Channel_Control;

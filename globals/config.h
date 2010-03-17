@@ -32,7 +32,7 @@
 
 #else
 
-#define MAX_VIRTUAL_VOICES 128
+#define MAX_VIRTUAL_VOICES 256
 #define CPU_32_BITS
 #define MIXDOWN_BUFFER_SIZE 2048
 	
