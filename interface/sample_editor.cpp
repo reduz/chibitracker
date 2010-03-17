@@ -190,7 +190,12 @@ void SampleEditor::fx_command(int p_command) {
 				fx_group->set_label_text( "Sample Alignment:" );
 			
 			} break;
-			
+			case SampleEditorEffects::CMD_MATCH_LOOP_END_BY_NOTE: {
+
+				fx_group->set_label_text( "Sample Note#" );
+
+			} break;
+
 		}
 		
 		

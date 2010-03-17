@@ -29,6 +29,7 @@
 #include "sample_editor_effects.h"
 #include "mixer/audio_lock.h"
 #include <stdio.h>
+#include <math.h>
 int SampleEditorEffects::get_begin() {
 
 	if (selection->is_active())
@@ -887,6 +888,22 @@ void SampleEditorEffects::command(int p_command,int p_parameter) {
 			selection->clear();
 			
 		} break;
+
+		case CMD_MATCH_LOOP_END_BY_NOTE: {
+
+
+			float base_freq=(8.1757989156*powf(2.0,p_parameter/12.0));
+			if (base_freq==0)
+				break;
+			int len = sm->get_c5_freq(sample)/base_freq;
+			if (len==0)
+				break;
+			int loop_beg = sm->get_loop_begin(sample);
+			int loop_end = sm->get_loop_end(sample);
+			loop_end-=(loop_end-loop_beg)%len;
+			sm->set_loop_end(sample,loop_end);
+
+		} break;
 		
 	}
 
@@ -904,6 +921,7 @@ bool SampleEditorEffects::command_has_parameter(int p_command) {
 		case CMD_ADD_SILENCE_AT_END:
 		case CMD_LOOP_TO_BOUNDARY:
 		case CMD_LEFT_CHAN_DELAY:
+		case CMD_MATCH_LOOP_END_BY_NOTE:
 			return true;
 			break;			
 	}
@@ -980,6 +998,13 @@ void SampleEditorEffects::command_set_parameter_range(int p_command,int& p_min, 
 			p_default=8;
 			p_max=32;
 			
+		} break;
+		case CMD_MATCH_LOOP_END_BY_NOTE: {
+
+			p_min=1;
+			p_default=60;
+			p_max=128;
+
 		} break;
 		default: {
 			

@@ -383,6 +383,7 @@ SampleScreen::SampleScreen(Tracker *p_tracker,bool p_mini) {
 	sample_fx->add_item("Resample (Frames)",SampleEditorEffects::CMD_RESAMPLE);
 	sample_fx->add_item("Resample (hz)",SampleEditorEffects::CMD_RESAMPLE_FREQ);
 	sample_fx->add_item("Delay Left Channel",SampleEditorEffects::CMD_LEFT_CHAN_DELAY);
+	sample_fx->add_item("Match Loop End",SampleEditorEffects::CMD_MATCH_LOOP_END_BY_NOTE);
 	sample_fx->add_separator();
 	sample_fx->add_item("Reverb",SampleEditor::CMD_REVERB);
 	
