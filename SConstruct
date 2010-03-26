@@ -19,7 +19,7 @@ if (os.name=="nt"):
 		env["DEBUG_CXXFLAGS"]=['-g3','-Wall']
 		env["DEBUG_LINKFLAGS"]=[]
 		env["RELEASE_CXXFLAGS"]=['-O2','-ffast-math']
-		env["RELEASE_LINKFLAGS"]=[]
+		env["RELEASE_LINKFLAGS"]=['-Wl,--subsystem,windows']
 		env["PROFILE_CXXFLAGS"]=['-pg','-g3','-Wall']
 		env["PROFILE_LINKFLAGS"]=['-pg']
 		

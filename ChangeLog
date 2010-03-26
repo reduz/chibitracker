@@ -1,6 +1,6 @@
 26.03.10 - VERSION 1.4.2
 ===================================================================================
-- prevented the dumb console window from appearing on windows (-mwindows flag on link)
+- prevented the dumb console window from appearing on windows (exchanged deprecated -mwindows by -Wl,--subsystem,windows)
 
 
 
