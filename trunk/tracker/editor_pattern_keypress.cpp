@@ -13,14 +13,15 @@
 #include "editor.h"
 #include "key_bindings.h"
 #include <stdio.h>
-bool Editor::handle_scancode(unsigned int chr,bool p_shift) {
+bool Editor::handle_scancode(unsigned int chr,bool p_shift, bool& modified) {
 
 
-	int previous_cursor_x,previous_cursor_y;
+	int previous_cursor_x=cursor_x;
+	int previous_cursor_y=cursor_y;
 	int aux_instrument;
 	bool grab_event=true;
 	bool must_repaint=false;
-
+	modified=false;
 
 	if (p_shift && !previous_shift) shift_selection_begin();
 	if (!p_shift && previous_shift) shift_selection_end();
@@ -136,12 +137,14 @@ bool Editor::handle_scancode(unsigned int chr,bool p_shift) {
 			
 			cursor_insert();
 			must_repaint=true;
-			
+			modified=true;
+		    
 		} break;
 		case KB_CURSOR_DELETE: {
 			
 			cursor_delete();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_PAN_WINDOW_UP: {
@@ -183,18 +186,21 @@ bool Editor::handle_scancode(unsigned int chr,bool p_shift) {
 			
 			selection_paste_insert();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_PASTE_OVERWRITE: {
 			
 			selection_paste_overwrite();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_PASTE_MIX: {
 			
 			selection_paste_mix();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_UNMARK: {
@@ -207,54 +213,64 @@ bool Editor::handle_scancode(unsigned int chr,bool p_shift) {
 			
 			selection_zap();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_SET_CURRENT_INSTRUMENT: {
 			
 			selection_set_instrument_mask();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_SET_CURRENT_VOLUME: {
 			
 			selection_set_volume_mask();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_WIPE_STRAY_VOLUMES: {
 			
 			selection_wipe_stray_volumes();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_RAMP_VOLUMES: {
 			
-			selection_volume_ramp();
+			selection_volume_pan_ramp();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_RAMP_WIPE_EFFECTS: {
 			
-			selection_parameter_ramp();
+			selection_parameter_ramp_wipe();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_DOUBLE_BLOCK_LENGTH: {
 			
 			selection_expand();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_BLOCK_HALVE_BLOCK_LENGTH: {
 			
 			selection_shrink();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_CURSOR_WRITE_MASK: {
 			
 			insert_mask_at_cursor();
 			must_repaint=true;
+			modified=true;
+			
 		} break;
 		case KB_PATTERN_FIELD_TOGGLE_MASK: {
 			
@@ -267,7 +283,7 @@ bool Editor::handle_scancode(unsigned int chr,bool p_shift) {
 			
 			clear_field_at_cursor();
 			must_repaint=true;
-			
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_FIELD_COPY_CURRENT: {
@@ -285,12 +301,14 @@ bool Editor::handle_scancode(unsigned int chr,bool p_shift) {
 			
 			selection_raise();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_LOWER_NOTES: {
 			
 			selection_lower();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 
@@ -298,17 +316,21 @@ bool Editor::handle_scancode(unsigned int chr,bool p_shift) {
 			
 			selection_raise_octave();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_LOWER_12_NOTES: {
 			
 			selection_lower_octave();
 			must_repaint=true;
+			modified=true;
 			
 		} break;
 		case KB_PATTERN_UNDO: {
 			
 			undo_index( 0 );
+			modified=true;
+			
 		} break;
 		case KB_PATTERN_NEXT: {
 			
@@ -421,11 +443,6 @@ bool Editor::handle_scancode(unsigned int chr,bool p_shift) {
 			must_repaint=true;
 			grab_event=true;
 	} */
-	
-
-
-
-	
 
 	return grab_event;
 

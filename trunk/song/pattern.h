@@ -26,7 +26,9 @@ private:
 		Uint8 instrument;
 		Uint8 volume;
 		Uint8 command;
-		Uint8 parameter;		
+		Uint8 parameter;
+		unsigned int script_source_sign;
+		bool cloned;
 	};
 
 	Uint16 length;
@@ -48,6 +50,13 @@ public:
 
 	bool set_note(Uint8 p_column, Uint16 p_row,const Note& p_note); //true if no more memory
 	Note get_note(Uint8 p_column,Uint16 p_row);
+	
+	Note get_transformed_script_note(Uint8 p_column, Uint16 p_row);
+	int get_scripted_note_target_channel(Uint8 p_column, Uint16 p_row);
+	void scripted_clone(Uint8 p_column, Uint16 p_row);
+	void scripted_clone_remove(Uint8 p_column, Uint16 p_row);
+	void script_transform_note(Note& n, const Note& p_note);
+	bool update_scripted_clones_sourcing_channel(int channel);
 	
 	void copy_to(Pattern *p_pattern) const;
 	void set_length(Uint16 p_rows);

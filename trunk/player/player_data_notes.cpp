@@ -300,12 +300,18 @@ void Player::process_volume_column(int p_track,Uint8 p_volume) {
 
 void Player::process_note(int p_track,Note p_note) {
 
-	
-	process_note_and_instrument(p_track,p_note.note,p_note.instrument);
-	process_volume_column(p_track,p_note.volume);
-	control.channel[p_track].current_command=p_note.command;
-	control.channel[p_track].current_parameter=p_note.parameter;
-
+	if ( p_note.note!=Note::SCRIPT ) {
+	    
+		process_note_and_instrument(p_track,p_note.note,p_note.instrument);
+		process_volume_column(p_track,p_note.volume);
+		control.channel[p_track].current_command=p_note.command;
+		control.channel[p_track].current_parameter=p_note.parameter;
+	    
+	} else {
+		
+		Note n = song->get_pattern( control.position.current_pattern )->get_transformed_script_note( p_track, control.position.current_row );
+		process_note( p_track, n );
+		
+		song->get_pattern( control.position.current_pattern )->scripted_clone( p_track, control.position.current_row );
+	}
 }
-
-

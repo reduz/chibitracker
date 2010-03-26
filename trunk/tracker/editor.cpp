@@ -228,7 +228,13 @@ void Editor::get_single_note_string(Uint8 p_note,char *p_str) {
 		p_str[0]='^';
 		p_str[1]='^';
 		p_str[2]='^';
-				
+
+	} else if (p_note==Note::SCRIPT) {
+
+		p_str[0]='c';
+		p_str[1]='p';
+		p_str[2]='y';
+
 	} else {
 		p_str[0]='?';
 		p_str[1]='?';
@@ -279,7 +285,13 @@ void Editor::get_note_string(int column,int row, char *buf) {
 		buf[0]='^';
 		buf[1]='^';
 		buf[2]='^';
-				
+
+	} else if (note.note==Note::SCRIPT) {
+
+		buf[0]='c';
+		buf[1]='p';
+		buf[2]='y';
+
 	} else {
 		buf[0]='?';
 		buf[1]='?';
@@ -292,28 +304,40 @@ void Editor::get_note_string(int column,int row, char *buf) {
 	/* Instrument */
 
 	if (note.instrument==Note::EMPTY) {
-
-		buf[4] = '.';
-		buf[5] = '.';
-
+	    
+	    buf[4] = '.';
+	    buf[5] = '.';
+	    
 	} else {
-
-		buf[4] = '0'+(note.instrument+1)/10;
-		buf[5] = '0'+(note.instrument+1) % 10;
+	    
+	    buf[4] = '0'+(note.instrument+1)/10;
+	    buf[5] = '0'+(note.instrument+1) % 10;
 	}
-
+	
+	if ( note.note==Note::SCRIPT && note.script_source_sign!='\0' )
+	    buf[4] = note.script_source_sign;
 
 	buf[6]=' ';
-	/* Volume */
 	
+	
+	/* Volume */
 
 	unsigned char tmpvol=note.volume;
 
-	if (tmpvol<65) {
+	if (note.note==Note::SCRIPT) {
+	    
+	    if (tmpvol==Note::EMPTY) {
+		buf[7] = '.';
+		buf[8] = '.';
+	    } else {
+		buf[7] = '0'+(tmpvol+1)/10;
+		buf[8] = '0'+(tmpvol+1) % 10;
+	    }
+	    
+	} else if (tmpvol<65) {
 
 		buf[7] = '0'+tmpvol/10;
 		buf[8] = '0'+tmpvol % 10;
-
 
 	} else if (tmpvol<75) {
 
@@ -380,18 +404,14 @@ void Editor::get_note_string(int column,int row, char *buf) {
 
 	buf[9]=' ';
 
+	
 	/* Command & Parameter */
 
 	
-
-	if (note.command==Note::EMPTY) {
-
-		buf[10] = '.';
-	} else {
-
-		buf[10] ='A'+note.command;
-
-	}
+	if (note.command==Note::EMPTY)
+	    buf[10] = '.';
+	else
+	    buf[10] = note.note!=Note::SCRIPT ? 'A'+note.command : note.command;
 
 	// Parameter 
 
@@ -406,6 +426,7 @@ void Editor::get_note_string(int column,int row, char *buf) {
 	
 
 }
+
 /*
 string Editor::get_pattern_note_string(Note p_note) {
 

@@ -429,7 +429,7 @@ class Player {
 	void process_new_note(int p_track,Uint8 p_note);
 	bool process_new_instrument(int p_track,Uint8 p_instrument);
 	bool process_note_and_instrument(int p_track,int p_note,int p_instrument);
-
+	
 	/* EFFECT PROCESSING */
 	void do_effect_S(int p_track);
 	void do_panbrello(int p_track);

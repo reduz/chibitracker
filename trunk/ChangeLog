@@ -1,13 +1,85 @@
-1.1
+VERSION 1.4
+===================================================================================
+
+- fixed Alt-Shift-Q/Alt-Shift-A (raise/lower octave) not working on cursor
+- implemented Alt-X*2 (wipe effects)
+- inputting a notecut or noteoff now wipes out sample/volume/effect data
+- Alt-K (ramp volume column values) now works with panning as well
+- SCx now cuts the note properly instead of setting its volume to zero
+- fixed FastBlue skin to properly show the 'p' character when using volume column panning
+
+
 ---
 
-new stuff
 
-1.0
----
-stable
+- new feature:  "cpy" channel-cloning macro (inputted by default with shift+1)
 
-0.9a
--=-=-
 
-Initial release!
+    "cpy" clones all the notes from the beginning of the target source channel into the
+    one the macro inhabits, optionally altering them according to special parameters.
+    
+    designed to be used in conjunction with channel-based mixing (volume, pan, surround)
+    for full potential.
+
+    .--------- SOURCE      specifies an absolute or relative channel index.  in this case
+    |                      the channel will replicate the one to the immediate left
+    |  .------ INSTRUMENT  exchanges all of the cloned notes' instruments for the one
+    |  |                   specified here
+    |  |   .-- TRANSPOSE   transposes the cloned data.  press Q for upwards transposition,
+    |  |   |               A for downwards.  first digit in the effect parameters
+    |  |   |               specifies octaves, second digit is semitones.  ^17 would mean one
+    |  |   |               octave and 7 semitones up, while v20 is two octaves down
+    |  |   |
+cpy -1 09 ^17
+
+cpy 02 .. v10 (clone track 2, tranpose 1 octave down)
+
+
+    macros allow for fast implementation of echo/delay and channel doublings, useful for
+faking chorus, octaving...  examples follow
+
+
+a simple delay
+
+  TRACK 01       TRACK 02
+C-5 02 .. .00  ... .. .. .00
+... .. .. .00  ... .. .. .00
+C-6 02 44 SD2  ... .. .. .00
+A#5 02 .. G44 *cpy -1 .. .00* <- note that although the first note isn't shown, it's still
+... .. .. G00  ... .. .. .00     played correctly
+... .. .. .00  C-6 02 44 SD2
+... .. .. .00  A#5 02 .. G44
+... .. .. .00  ... .. ...G00
+
+
+bass doubling (changes sample/instrument and transposes one octave up)
+
+  TRACK 01       TRACK 02       TRACK 03
+... .. .. .00  C-4 03 .. .00 *cpy 02 05 ^10*
+... .. .. .00  ... .. .. .00  ... .. .. .00
+... .. .. .00  ... .. .. .00  ... .. .. .00
+... .. .. .00  ^^^ .. .. .00  ^^^ .. .. .00
+... .. .. .00  G-3 03 .. .00  G-4 05 .. .00
+... .. .. .00  ... .. .. SC2  ... .. .. SC2
+... .. .. .00  F-3 03 .. .00  F-4 05 .. .00
+
+
+
+VERSION 1.1
+===================================================================================
+
+- new stuff
+
+
+
+VERSION 1.0
+===================================================================================
+
+- stable
+
+
+
+VERSION 0.9a
+===================================================================================
+
+- Initial release!

@@ -301,10 +301,11 @@ void Editor::clear_field_at_cursor() {
 		case 1: break;
 		case 2:
 		case 3:{
-
+			
 			Note n=get_current_note();
-						
+			
 			n.instrument=Note::EMPTY;
+			n.script_source_sign='\0';
 			
 			set_current_note( n );
 			
@@ -436,11 +437,11 @@ void Editor::perform_action(Pattern_Actions p_action) {
 		} break;
 		case Pattern_BLOCK_RAMP_WIPE_VOLUMES: {
 
-	                selection_volume_ramp();
+	                selection_volume_pan_ramp();
 		} break;
 		case Pattern_BLOCK_RAMP_WIPE_EFFECTS: {
 
-	                selection_parameter_ramp();
+	                selection_parameter_ramp_wipe();
 		} break;
 		case Pattern_BLOCK_DOUBLE_BLOCK_LENGTH: {
 

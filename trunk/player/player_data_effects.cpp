@@ -634,7 +634,9 @@ void Player::do_effect_S(int p_track) {
 
 			if (control.ticks_counter>=inf) {
 
-				control.channel[p_track].aux_volume=0;				
+				control.channel[p_track].aux_volume=0;
+				control.channel[p_track].note_end_flags|=END_NOTE_OFF;
+				control.channel[p_track].note_end_flags|=END_NOTE_KILL;
 			}
                 } break;
                 case 0xD: {/* SDx notedelay */

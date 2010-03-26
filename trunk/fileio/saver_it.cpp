@@ -543,6 +543,12 @@ void Saver_IT::write_pattern(int p_pattern) {
 				int flags=0;
 				Note src_note=song->get_pattern(p_pattern)->get_note(j,i);
 
+				if (src_note.note==Note::SCRIPT ) {
+					
+					src_note = song->get_pattern(p_pattern)->get_transformed_script_note(j,i);
+					
+				}
+				
 				//Check for what changed, and fill cache!
 
 				if (src_note.note!=Note::EMPTY) {

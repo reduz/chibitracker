@@ -11,6 +11,7 @@ struct Note {
 		OFF=254,
 		CUT=253,
 		EMPTY=255,
+		SCRIPT=252,
 	};
 
 
@@ -19,6 +20,8 @@ struct Note {
 	Uint8 volume;
 	Uint8 command;
 	Uint8 parameter;
+	unsigned int script_source_sign;
+	bool cloned;
 
 	void clear() {
 
@@ -27,17 +30,24 @@ struct Note {
 		volume=EMPTY;
 		command=EMPTY;
 		parameter=0;
+		script_source_sign='\0';
+		cloned=false;
 	}
 	
 	void raise() {
 
-		if (note<(NOTES-1)) note++;
-
+		if (note<(NOTES-1))
+		    note++;
+		else if (note==SCRIPT && parameter<0xFF)
+		    parameter++;
 	}
 
 	void lower() {
 
-		if ((note>0) && (note<NOTES)) note--;
+		if ((note>0) && (note<NOTES))
+		    note--;
+		else if (note==SCRIPT && parameter>0)
+		    parameter--;
 
 	}
 
@@ -52,7 +62,7 @@ struct Note {
 			);
 	}
 
-	bool is_empty() const { return (note==EMPTY && instrument==EMPTY && volume==EMPTY && command==EMPTY && parameter==0); }
+	bool is_empty() const { return (note==EMPTY && instrument==EMPTY && volume==EMPTY && command==EMPTY && parameter==0 && !cloned); }
 	Note() {
 
 		clear();
