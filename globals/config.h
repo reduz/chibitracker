@@ -18,7 +18,7 @@
 
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 4
-#define VERSION_REV "1"
+#define VERSION_REV ".2"
 
 
 #define ZERO_STRUCT( m_struct ) { for (long __i=0;__i<sizeof(m_struct);__i++) ((char*)(&m_struct))[__i]=0; }
