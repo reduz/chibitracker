@@ -1,3 +1,9 @@
+26.03.10 - VERSION 1.4.2
+===================================================================================
+- prevented the dumb console window from appearing on windows (-mwindows flag on link)
+
+
+
 26.03.10 - VERSION 1.4.1
 ===================================================================================
 - disabled the asshole button (shift-f12, deadlocked audio thread)
