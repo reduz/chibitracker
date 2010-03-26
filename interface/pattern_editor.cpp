@@ -34,6 +34,7 @@
 #include "tracker/key_bindings.h"
 #include "base/painter.h"
 #include <stdio.h>
+
 //int PatternEditor::volume_scale_memory=100; //default val
 
 
@@ -465,7 +466,9 @@ void PatternEditor::print_single_row(int rowofs) {
 			}
 
 			bool mute=song->is_channel_mute( editor->get_column_offset()+ i);
-			p->draw_text( font(FONT_PATTERN_EDITOR), Point(x, y+p->get_font_ascent( font(FONT_PATTERN_EDITOR) )), note_string, color(mute?COLOR_PATTERN_EDITOR_FONT_MUTE:COLOR_PATTERN_EDITOR_FONT) );
+			bool cloned=song->get_pattern( editor->get_current_pattern() )->get_note( editor->get_column_offset()+i, current_row ).cloned;
+			
+			p->draw_text( font(FONT_PATTERN_EDITOR), Point(x, y+p->get_font_ascent( font(FONT_PATTERN_EDITOR) )), note_string, color(mute?COLOR_PATTERN_EDITOR_FONT_MUTE:(cloned?COLOR_PATTERN_EDITOR_FONT_CLONED:COLOR_PATTERN_EDITOR_FONT)) );
 
 		}
 

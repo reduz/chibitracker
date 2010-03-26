@@ -91,22 +91,29 @@ int Editor::get_note_from_charcode(unsigned int p_charcode) {
 
 
 bool Editor::insert_note_at_cursor(unsigned int scode) {
-
 	
 	KeyBindList bind=KeyBind::get_bind( scode );
 	if (bind==KB_MAX)
 		return false;
 	
 	if (bind==KB_PATTERN_CURSOR_INSERT_NOTE_OFF_VOLPAN_TOGGLE) {
-		
+	    
 		insert_noteoff_at_cursor();
 		return true;
+	    
 	} else if (bind==KB_PATTERN_CURSOR_INSERT_NOTE_CUT) {
-		
+	    
 		insert_notecut_at_cursor();
 		return true;
 		
+	} else if (bind==KB_PATTERN_CURSOR_INSERT_SCRIPT) {
+		
+		insert_script_at_cursor();
+		return true;
+		
 	} else if (bind>=KB_PIANO_MIN && bind<=KB_PIANO_MAX) {
+		Note n = get_current_note();
+		if (n.note==Note::SCRIPT) { n.clear(); set_current_note( n ); }
 		
 		Uint8 tmpinc=bind-KB_PIANO_MIN;
 		Uint8 tmpnote=(12*default_octave+tmpinc);	
@@ -206,6 +213,129 @@ void Editor::insert_instrument_at_cursor_field2(Uint8 instrument) {
 	set_current_note(n);
 	cursor_move_down();
 	cursor_move_field_left();
+	
+}
+
+
+void Editor::insert_script_source_at_cursor_field1(unsigned int unicode) {
+
+	int tmp_inst;
+	int instrument=0;
+    
+	Note n=get_current_note();
+	tmp_inst=n.instrument;
+    
+	if (unicode == '-' || unicode == '+')
+	    n.script_source_sign = unicode;
+	else {
+	    n.script_source_sign = '\0';
+	    instrument=(unicode-'0');
+	}
+    
+	
+	if (tmp_inst==Note::EMPTY) tmp_inst=0;
+        else tmp_inst++;
+
+	tmp_inst=(tmp_inst % 10);
+	tmp_inst=tmp_inst+instrument*10;
+
+	if (tmp_inst==0) tmp_inst=Note::EMPTY;
+	else {
+
+		if (tmp_inst>99) tmp_inst=99;
+		tmp_inst--;
+	}
+
+
+	n.instrument=tmp_inst;
+	set_current_note(n);
+
+	cursor_move_field_right();
+	
+}
+
+void Editor::insert_script_source_at_cursor_field2(Uint8 instrument) {
+
+	int tmp_inst;
+
+	Note n=get_current_note();
+	tmp_inst=n.instrument;
+
+	if (tmp_inst==Note::EMPTY) tmp_inst=0;
+        else tmp_inst++;
+
+	tmp_inst=(tmp_inst / 10)*10;
+	tmp_inst=tmp_inst+instrument;
+
+	if (tmp_inst==0) tmp_inst=Note::EMPTY;
+	else {
+
+		if (tmp_inst>99) tmp_inst=99;
+		tmp_inst--;
+	}
+
+
+	n.instrument=tmp_inst;
+	set_current_note(n);
+	
+	cursor_move_field_right();
+}
+
+
+void Editor::insert_script_instrument_at_cursor_field1(Uint8 instrument) {
+
+	int tmp_inst;
+
+	Note n=get_current_note();
+	tmp_inst=n.volume;
+
+	if (tmp_inst==Note::EMPTY) tmp_inst=0;
+        else tmp_inst++;
+
+	tmp_inst=(tmp_inst % 10);
+	tmp_inst=tmp_inst+instrument*10;
+
+	if (tmp_inst==0) tmp_inst=Note::EMPTY;
+	else {
+
+		if (tmp_inst>99) tmp_inst=99;
+		tmp_inst--;
+	}
+
+
+	n.volume=tmp_inst;
+	set_current_note(n);
+
+	cursor_move_field_right();
+	
+}
+
+void Editor::insert_script_instrument_at_cursor_field2(Uint8 instrument) {
+
+	int tmp_inst;
+
+	Note n=get_current_note();
+	tmp_inst=n.volume;
+
+	if (tmp_inst==Note::EMPTY) tmp_inst=0;
+        else tmp_inst++;
+
+	tmp_inst=(tmp_inst / 10)*10;
+	tmp_inst=tmp_inst+instrument;
+
+	if (tmp_inst==0) tmp_inst=Note::EMPTY;
+	else {
+
+		if (tmp_inst>99) tmp_inst=99;
+		tmp_inst--;
+	}
+
+
+
+	n.volume=tmp_inst;
+	set_current_note(n);
+	
+	cursor_move_field_right();
 	
 }
 
@@ -362,30 +492,131 @@ void Editor::insert_parameter_at_cursor_field2(Uint8 parameter) {
 }
 
 
+void Editor::insert_script_command_at_cursor(char command) {
+
+	Note n=get_current_note();
+	
+	n.command = command=='Q' ? '^' : 'v';
+	
+	set_current_note(n);	
+	cursor_move_field_right();
+}
+
+void Editor::insert_script_parameter_at_cursor_field1(Uint8 parameter) {
+
+	Note n=get_current_note();
+	n.parameter=parameter*0x10+n.parameter % 0x10;
+	last_command=n.command;
+	last_parameter=n.parameter;
+	
+	set_current_note(n);
+
+	cursor_move_field_right();
+}
+
+void Editor::insert_script_parameter_at_cursor_field2(Uint8 parameter) {
+
+	Note n=get_current_note();
+	n.parameter=parameter+n.parameter/0x10*0x10;
+	last_command=n.command;
+	last_parameter=n.parameter;
+
+	set_current_note(n);
+	cursor_move_down();
+	cursor_move_field_left();
+}
+
+
 bool Editor::key_press_at_cursor(unsigned int p_scode,unsigned int p_unicode,bool p_shift) { // A-Z (caps) / 0-9
 	
-	bool success=false;
-
-	if (handle_scancode(p_scode,p_shift))
-		return true;
+	int previous_cursor_x=cursor_x;
+	int previous_cursor_y=cursor_y;
+	bool success;
+	bool modified;
 	
-	switch (cursor_field) {
-
-		case 0: { success=insert_note_at_cursor(p_scode); } break;
-		case 1: { if IS_NUMBER(p_unicode) insert_octave_at_cursor(p_unicode-'0'); } break;
-		case 2: { if IS_NUMBER(p_unicode) insert_instrument_at_cursor_field1(p_unicode-'0'); } break;
-		case 3: { if IS_NUMBER(p_unicode) insert_instrument_at_cursor_field2(p_unicode-'0'); } break;
-		case 4: { if (IS_NUMBER(p_unicode) || IS_LETTER(p_unicode)) insert_volume_at_cursor_field1(UPPERC(p_unicode)); } break;
-		case 5: { if IS_NUMBER(p_unicode) insert_volume_at_cursor_field2(p_unicode-'0'); } break;
-		case 6: { if IS_LETTER(UPPERC(p_unicode)) insert_command_at_cursor(UPPERC(p_unicode)); } break;
-		case 7: { if IS_HEX_NUMBER(UPPERC(p_unicode)) insert_parameter_at_cursor_field1(CHAR_TO_HEX(UPPERC(p_unicode))); } break;
-		case 8: { if IS_HEX_NUMBER(UPPERC(p_unicode)) insert_parameter_at_cursor_field2(CHAR_TO_HEX(UPPERC(p_unicode))); } break;
-	}
-
-	if ((cursor_field==4 || cursor_field==5) && KeyBind::get_bind( p_scode)==KB_PATTERN_CURSOR_INSERT_NOTE_OFF_VOLPAN_TOGGLE) {
+	Note n=get_current_note();
+	bool is_script=(n.note==Note::SCRIPT);
+	
+	if (!(success = handle_scancode(p_scode,p_shift,modified))) {
 		
-		volume_pan_mode=!volume_pan_mode;
+		switch (cursor_field) {
+			
+			case 0: { success=insert_note_at_cursor(p_scode); } break;
+			case 1: { if ( !is_script && IS_NUMBER(p_unicode) ) insert_octave_at_cursor(p_unicode-'0'); } break;
+			
+			case 2: {
+			    if ( !is_script && IS_NUMBER(p_unicode) ) insert_instrument_at_cursor_field1(p_unicode-'0');
+			    else if ( is_script && (IS_NUMBER(p_unicode) || p_unicode == '-' || p_unicode == '+') ) insert_script_source_at_cursor_field1(p_unicode); } break;
+			    
+			case 3: {
+			    if ( !is_script && IS_NUMBER(p_unicode) ) insert_instrument_at_cursor_field2(p_unicode-'0');
+			    else if ( is_script && IS_NUMBER(p_unicode) ) insert_script_source_at_cursor_field2(p_unicode-'0'); } break;
+			    
+			case 4: {
+			    if ( !is_script && (IS_NUMBER(p_unicode) || IS_LETTER(p_unicode)) ) insert_volume_at_cursor_field1(UPPERC(p_unicode));
+			    else if ( is_script && IS_NUMBER(p_unicode) ) insert_script_instrument_at_cursor_field1(p_unicode-'0'); } break;
+			    
+			case 5: {
+			    if ( !is_script && IS_NUMBER(p_unicode) ) insert_volume_at_cursor_field2(p_unicode-'0');
+			    else if ( is_script && IS_NUMBER(p_unicode) ) insert_script_instrument_at_cursor_field2(p_unicode-'0'); } break;
+			    
+			case 6: {
+			    if ( !is_script && IS_LETTER(UPPERC(p_unicode)) ) insert_command_at_cursor(UPPERC(p_unicode)); 
+			    else if ( is_script && (UPPERC(p_unicode)=='Q' || UPPERC(p_unicode)=='A') ) insert_script_command_at_cursor(UPPERC(p_unicode)); } break;
+			    
+			case 7: {
+			    if ( !is_script && IS_HEX_NUMBER(UPPERC(p_unicode)) ) insert_parameter_at_cursor_field1(CHAR_TO_HEX(UPPERC(p_unicode)));
+			    else if ( is_script && IS_HEX_NUMBER(UPPERC(p_unicode)) ) insert_script_parameter_at_cursor_field1(CHAR_TO_HEX(UPPERC(p_unicode))); } break;
+			    
+			case 8: {
+			    if ( !is_script && IS_HEX_NUMBER(UPPERC(p_unicode)) ) insert_parameter_at_cursor_field2(CHAR_TO_HEX(UPPERC(p_unicode)));
+			    else if ( is_script && IS_HEX_NUMBER(UPPERC(p_unicode)) ) insert_script_parameter_at_cursor_field2(CHAR_TO_HEX(UPPERC(p_unicode))); } break;
+		}
+		
+		modified=true;
+		
+		if ((cursor_field==4 || cursor_field==5) && KeyBind::get_bind( p_scode)==KB_PATTERN_CURSOR_INSERT_NOTE_OFF_VOLPAN_TOGGLE) {
+			
+			volume_pan_mode=!volume_pan_mode;
+			modified=false;
+		}
 	}
+	
+	if ( modified ) {
+		
+		bool was_script = is_script;
+		
+		n=song->get_pattern(get_current_pattern())->get_note(previous_cursor_x, previous_cursor_y);
+		is_script=(n.note==Note::SCRIPT);
+		
+		if (is_script) {
+		    
+		    song->get_pattern(get_current_pattern())->scripted_clone(previous_cursor_x, previous_cursor_y);
+		    set_flag_redraw_all();
+		    
+		} else if (song->get_pattern(get_current_pattern())->update_scripted_clones_sourcing_channel(previous_cursor_x)) {
+		    
+		    set_flag_redraw_all();
+		    
+		}
+		
+		if (was_script && !is_script) {
+		    
+		    // get rid of cloned notes
+		    
+		    song->get_pattern(get_current_pattern())->scripted_clone_remove(previous_cursor_x, previous_cursor_y);
+		    
+		    // redo cloning (special case)
+		    
+		    for ( int y = 0; y < song->get_pattern(get_current_pattern())->get_length(); ++y )
+			if ( song->get_pattern(get_current_pattern())->get_note( previous_cursor_x, y ).note == Note::SCRIPT )
+			    song->get_pattern(get_current_pattern())->scripted_clone( previous_cursor_x, y );
+		    
+		    set_flag_redraw_all();
+		    
+		}
+	}
+	
 	return success;
 }
 
@@ -395,6 +626,7 @@ void Editor::insert_noteoff_at_cursor() {
 	Note n=get_current_note();
 	if (cursor_field<2) {
 
+		n.clear();
 		n.note=Note::OFF;
 		set_current_note(n);
 		player->play_note( cursor_x , n,true );
@@ -477,11 +709,22 @@ void Editor::get_mask_from_cursor() {
 void Editor::insert_notecut_at_cursor() {
 
 	Note n=get_current_note();
+	n.clear();
 	n.note=Note::CUT;
 	player->play_note( cursor_x , n,true );
 	set_current_note(n);
 	cursor_move_down();
 	
+}
+
+void Editor::insert_script_at_cursor() {
+
+	Note n=get_current_note();
+	if (n.note!=Note::SCRIPT) n.clear();
+	n.note=Note::SCRIPT;
+	set_current_note(n);
+	cursor_field++;
+	cursor_field++;
 }
 
 void Editor::perform_raise_at_cursor() {
@@ -498,6 +741,42 @@ void Editor::perform_lower_at_cursor() {
 	set_current_note(n);
 }
 
+void Editor::perform_raise_octave_at_cursor() {
+
+	Note n=get_current_note();
+	
+	if (n.note<Note::NOTES) {
+		n.note+=12;
+		if (n.note>=Note::NOTES) 
+			n.note=Note::NOTES-1;
+	} else if (n.note==Note::SCRIPT) {
+		if (n.parameter>=0xF0)
+		    n.parameter=0xFF;
+		else
+		    n.parameter+=0x10;
+	}
+	
+	set_current_note(n);
+}
+
+void Editor::perform_lower_octave_at_cursor() {
+
+	Note n=get_current_note();
+	
+	if (n.note<Note::NOTES) {
+		if (n.note>11) 
+			n.note-=12;
+		else
+			n.note=0;
+	} else if (n.note==Note::SCRIPT) {
+		if (n.parameter>0xF)
+			n.parameter-=0x10;
+		else
+			n.parameter=0;
+	}
+	
+	set_current_note(n);
+}
 
 
 

@@ -139,6 +139,7 @@ private:
 	void insert_noteoff_at_cursor();
 	void insert_mask_at_cursor();
 	void insert_notecut_at_cursor();
+	void insert_script_at_cursor();
 	
 	bool insert_note_at_cursor(unsigned int chr);
 	void insert_octave_at_cursor(Uint8 octave);
@@ -146,6 +147,12 @@ private:
 	void insert_instrument_at_cursor_field1(Uint8 parameter);
 	void insert_instrument_at_cursor_field2(Uint8 parameter);
 
+	void insert_script_source_at_cursor_field1(unsigned int unicode);
+	void insert_script_source_at_cursor_field2(Uint8 parameter);
+	
+	void insert_script_instrument_at_cursor_field1(Uint8 parameter);
+	void insert_script_instrument_at_cursor_field2(Uint8 parameter);
+	
 	void insert_volume_at_cursor_field1(Uint8 volume);
 	void insert_volume_at_cursor_field2(Uint8 volume);
 
@@ -153,6 +160,9 @@ private:
 	void insert_parameter_at_cursor_field1(Uint8 parameter);
 	void insert_parameter_at_cursor_field2(Uint8 parameter);
 
+	void insert_script_command_at_cursor(char command);
+	void insert_script_parameter_at_cursor_field1(Uint8 parameter);
+	void insert_script_parameter_at_cursor_field2(Uint8 parameter);
 
 	/* USER_EDITING_VARIABLES */
 
@@ -168,6 +178,7 @@ private:
 	bool volume_mask;
 	bool command_mask;
         bool volume_pan_mode;
+	bool script_mode;
 
         int cursor_spacing;
 	
@@ -232,7 +243,7 @@ private:
 	void set_current_note(const Note& p_note);
 	Note get_current_note();
 	
-	bool handle_scancode(unsigned int scode,bool p_shift);
+	bool handle_scancode(unsigned int scode,bool p_shift,bool& modified);
 	
 	bool previous_shift;
 	
@@ -257,6 +268,7 @@ public:
 	void get_single_note_string(Uint8 p_note,char *p_str);
 	int get_note_from_charcode(unsigned int p_charcode);
 	void get_note_string(int column,int row,char *buf);
+	bool is_note_cloned(int column,int row);
 
 	//The visual ones!
 
@@ -404,9 +416,9 @@ public:
         void selection_lower();
 	void selection_raise_octave();
 	void selection_lower_octave();
-	void selection_volume_ramp();
+	void selection_volume_pan_ramp();
         void selection_volume_scale(int p_percent);
-        void selection_parameter_ramp();
+        void selection_parameter_ramp_wipe();
         void selection_wipe_stray_volumes();
 	void selection_set_volume_mask();
         void selection_set_instrument_mask();
@@ -420,6 +432,8 @@ public:
 
 	void perform_raise_at_cursor();
 	void perform_lower_at_cursor();
+	void perform_raise_octave_at_cursor();
+	void perform_lower_octave_at_cursor();
 
 	/* ORDERLIST KEY PRESS HANDLERS */
 

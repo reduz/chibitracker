@@ -251,6 +251,8 @@ bool Pattern::set_note(Uint8 p_column, Uint16 p_row,const Note& p_note) {
 	event_list[new_pos].volume=p_note.volume;
 	event_list[new_pos].command=p_note.command;
 	event_list[new_pos].parameter=p_note.parameter;
+	event_list[new_pos].script_source_sign=p_note.script_source_sign;
+	event_list[new_pos].cloned=p_note.cloned;
 	
 	release_event_list();
 	
@@ -260,7 +262,8 @@ bool Pattern::set_note(Uint8 p_column, Uint16 p_row,const Note& p_note) {
 }
 Note Pattern::get_note(Uint8 p_column,Uint16  p_row) {
 
-	
+	if (p_column==Note::EMPTY) return Note();
+    
 	ERR_FAIL_COND_V(p_column>=WIDTH,Note());
 	ERR_FAIL_COND_V(p_row>=length,Note());
 
@@ -292,10 +295,163 @@ Note Pattern::get_note(Uint8 p_column,Uint16  p_row) {
 	n.volume=event_list[pos_idx].volume;
 	n.command=event_list[pos_idx].command;
 	n.parameter=event_list[pos_idx].parameter;
+	n.script_source_sign=event_list[pos_idx].script_source_sign;
+	n.cloned=event_list[pos_idx].cloned;
 	
 	release_event_list();
 	return n;
 	
+}
+
+Note Pattern::get_transformed_script_note(Uint8 p_column,Uint16 p_row ) {
+	
+	Note n = get_note( p_column, p_row );
+	
+	// get source channel and note
+	
+	int channel = get_scripted_note_target_channel( p_column, p_row );
+	Note src_n = get_note( channel, 0 );
+	
+	if ( src_n.note == Note::SCRIPT ) return Note();
+	
+	script_transform_note( src_n, n );
+	
+	return src_n;
+	
+}
+
+int Pattern::get_scripted_note_target_channel(Uint8 p_column, Uint16 p_row) {
+	
+	Note n = get_note( p_column, p_row );
+	
+	if ( n.note != Note::SCRIPT ) return Note::EMPTY;
+	
+	int channel = n.instrument;
+	
+	if ( n.script_source_sign == '\0' ) {
+		
+	    if ( channel < 0 || channel >= Pattern::WIDTH ) return Note::EMPTY;
+	
+	} else {
+	    
+	    channel = p_column + ( ( n.script_source_sign=='+') ? 1 : -1 ) * (channel+1);
+	    if ( channel < 0 || channel >= Pattern::WIDTH ) return Note::EMPTY;
+	    
+	}
+	
+	return channel;
+}
+
+void Pattern::scripted_clone(Uint8 p_column, Uint16 p_row) {
+	
+	int channel = get_scripted_note_target_channel( p_column, p_row );
+	int src_row = 1;
+	Note script_n = get_note( p_column, p_row );
+	
+	for ( int row = p_row+1; row < length; ++row ) {
+	    
+	    Note src_n = get_note( channel, src_row );
+	    Note target_n = get_note( p_column, row );
+	    
+	    if ( target_n.note != Note::SCRIPT ) {
+		if ( src_n.note == Note::SCRIPT ) {
+		    src_n = Note();
+		    channel = Note::EMPTY;
+		}
+		
+		script_transform_note( src_n, script_n );
+		
+		src_n.cloned = true;
+		set_note( p_column, row, src_n );
+		
+	    } else {
+		
+		return;
+		
+	    }
+	    
+	    src_row++;
+	}
+	
+}
+
+void Pattern::scripted_clone_remove(Uint8 p_column, Uint16 p_row) {
+	
+	if ( get_note( p_column, p_row ).cloned )
+	    set_note( p_column, p_row, Note() );
+	
+	for ( int row = p_row+1; row < length; ++row ) {
+	    
+	    Note target_n = get_note( p_column, row );
+	    
+	    if ( target_n.note != Note::SCRIPT ) {
+		
+		set_note( p_column, row, Note() );
+		
+	    } else {
+		
+		return;
+		
+	    }
+	    
+	}
+	
+}
+
+void Pattern::script_transform_note(Note& n, const Note& p_note) {
+	
+	// set instrument
+	
+	if ( n.note < Note::NOTES && p_note.volume != Note::EMPTY ) {
+	    
+	    n.instrument = p_note.volume;
+	    
+	}
+	
+	// transpose
+	
+	if ( n.note < Note::NOTES && p_note.command != Note::EMPTY ) {
+	    
+	    int transpose = ( p_note.parameter & 0xF ) + ( p_note.parameter / 0x10 ) * 12;
+	    
+	    if ( p_note.command == '^' ) {
+		
+		if ( n.note >= Note::NOTES-transpose )
+		    n.note = Note::NOTES-1;
+		else
+		    n.note += transpose;
+		
+	    } else if ( p_note.command == 'v' ) {
+		
+		if ( n.note <= transpose )
+		    n.note = 0;
+		else
+		    n.note -= transpose;
+		
+	    }
+	}
+	
+}
+
+bool Pattern::update_scripted_clones_sourcing_channel( int channel ) {
+    
+    bool updated = false;
+    
+    for ( int x = 0; x < WIDTH; ++x ) {
+	
+	for (int y = 0; y < length; ++y ) {
+	    
+	    if ( channel == get_scripted_note_target_channel( x, y ) ) {
+		
+		scripted_clone( x, y );
+		updated = true;
+	    }
+	    
+	}
+	
+    }
+    
+    return updated;
 }
 
 void Pattern::set_length(Uint16 p_rows) {

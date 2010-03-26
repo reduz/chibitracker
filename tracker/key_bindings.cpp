@@ -103,6 +103,7 @@ KeyBind::KeyBind() {
 	
 	key_binds[KB_PATTERN_CURSOR_INSERT_NOTE_OFF_VOLPAN_TOGGLE].description="Pattern - Insert Note Off/Toggle PanMask";
 	key_binds[KB_PATTERN_CURSOR_INSERT_NOTE_CUT].description="Pattern - Cursor Insert Note Cut";
+	key_binds[KB_PATTERN_CURSOR_INSERT_SCRIPT].description="Pattern - Cursor Insert Channel Script";
 	key_binds[KB_PATTERN_CURSOR_PLAY_FIELD].description="Pattern - Cursor Play Field";
 	key_binds[KB_PATTERN_CURSOR_PLAY_ROW].description="Pattern - Cursor Play Row";
 	

@@ -238,18 +238,23 @@ void Editor::selection_raise_octave() {
 			for (j=selection_begin_x;j<=selection_end_x;j++) {
 				
 				Note n=song->get_pattern(current_pattern)->get_note(j,i);
+				
 				if (n.note<Note::NOTES) {
 					n.note+=12;
 					if (n.note>=Note::NOTES) 
 						n.note=Note::NOTES-1;
+				} else if (n.note==Note::SCRIPT) {
+					if (n.parameter>=0xF0)
+					    n.parameter=0xFF;
+					else
+					    n.parameter+=0x10;
 				}
-				
 				
 				song->get_pattern(current_pattern)->set_note(j,i,n);
 				
 			}
 		
-	} else perform_raise_at_cursor();
+	} else perform_raise_octave_at_cursor();
 	
 }
 
@@ -272,6 +277,11 @@ void Editor::selection_lower_octave() {
 						n.note-=12;
 					else
 						n.note=0;
+				} else if (n.note==Note::SCRIPT) {
+					if (n.parameter>0xF)
+						n.parameter-=0x10;
+					else
+						n.parameter=0;
 				}
 		
 				
@@ -279,7 +289,7 @@ void Editor::selection_lower_octave() {
 				
 			}
 		
-	} else perform_lower_at_cursor();
+	} else perform_lower_octave_at_cursor();
 	
 }
 
@@ -301,64 +311,93 @@ void Editor::selection_zap() {
 
 }
 	
-void Editor::selection_parameter_ramp() {
+void Editor::selection_parameter_ramp_wipe() {
 
 	int i,j;
-	int value_begin,value_end;
-
+	int value_begin,value_end,value_new;
+	bool changed = false;
+	
 	push_current_pattern_to_undo_list(PATTERN_SELECTION_RAMP_PARAMETERS);
-
-
+	
         if (selection_active && selection_begin_y<selection_end_y) {
-
-
-		for (j=selection_begin_x;j<=selection_end_x;j++) {
 		
-				value_begin=song->get_pattern(current_pattern)->get_note(j,selection_begin_y).parameter;
-				value_end=song->get_pattern(current_pattern)->get_note(j,selection_end_y).parameter;
-	
+		for (j=selection_begin_x;j<=selection_end_x;j++) {
+			
+			value_begin=song->get_pattern(current_pattern)->get_note(j,selection_begin_y).parameter;
+			value_end=song->get_pattern(current_pattern)->get_note(j,selection_end_y).parameter;
+			
 			for (i=selection_begin_y;i<=selection_end_y;i++) {
-	
+				
 				Note n=song->get_pattern(current_pattern)->get_note(j,i);
-	                        n.parameter=value_begin+(value_end-value_begin)*(i-selection_begin_y)/(selection_end_y-selection_begin_y);
+	                        value_new=value_begin+(value_end-value_begin)*(i-selection_begin_y)/(selection_end_y-selection_begin_y);
+				
+				if (n.parameter!=value_new) {
+					changed=true;
+					n.parameter=value_new;
+				}
 				
 				song->get_pattern(current_pattern)->set_note(j,i,n);
 			}
-	
+			
 		}
-	
+		
 	}
-
-}
 	
-void Editor::selection_volume_ramp() {
+	// alt-x*2
+	
+	if (!changed) {
+	    
+		if (selection_active && selection_begin_y<selection_end_y) {
+		    
+			for (j=selection_begin_x;j<=selection_end_x;j++) {
+				
+				for (i=selection_begin_y;i<=selection_end_y;i++) {
+					
+					Note n=song->get_pattern(current_pattern)->get_note(j,i);
+					n.command=Note::EMPTY;
+					n.parameter=0;
+					
+					song->get_pattern(current_pattern)->set_note(j,i,n);
+					
+				}
+				
+			}
+			
+		}
+		
+	}
+}
+
+void Editor::selection_volume_pan_ramp() {
 
 	int i,j;
 	int value_begin,value_end;
-
+	
 	push_current_pattern_to_undo_list(PATTERN_SELECTION_RAMP_VOLUMES);
-
+	
         if (selection_active && selection_begin_y<selection_end_y ) {
-	
+		
 		for (j=selection_begin_x;j<=selection_end_x;j++) {
-		
-				value_begin=song->get_pattern(current_pattern)->get_note(j,selection_begin_y).volume;
-				value_end=song->get_pattern(current_pattern)->get_note(j,selection_end_y).volume;
-	
-			if (value_begin<65 && value_end<65) {
-
+			
+			value_begin=song->get_pattern(current_pattern)->get_note(j,selection_begin_y).volume;
+			value_end=song->get_pattern(current_pattern)->get_note(j,selection_end_y).volume;
+			
+			if ((value_begin<65 && value_end<65) || (value_begin>=128 && value_end>=128 && value_begin<=192 && value_end<=192)) {
+				
 				for (i=selection_begin_y;i<=selection_end_y;i++) {
+					
 					Note n=song->get_pattern(current_pattern)->get_note(j,i);
-		
+					
 		                        n.volume=value_begin+(value_end-value_begin)*(i-selection_begin_y)/(selection_end_y-selection_begin_y);
 					
 					song->get_pattern(current_pattern)->set_note(j,i,n);
 					
 				}
+				
 			}
-	
+			
 		}
-	
+		
 	}
 	
 }
@@ -398,13 +437,20 @@ void Editor::selection_paste_overwrite() {
 	limit_y=cursor_y+(clipboard.get_length()-1);
 	if (limit_y>(song->get_pattern(current_pattern)->get_length()-1)) limit_y=(song->get_pattern(current_pattern)->get_length()-1);
 	
-	for (i=cursor_x;i<=limit_x;i++)
-
+	for (i=cursor_x;i<=limit_x;i++) {
+		
 		for (j=cursor_y;j<=limit_y;j++) {
-
-		song->get_pattern(current_pattern)->set_note(i,j, clipboard.get_note(i-cursor_x,j-cursor_y) );
-
+			
+			Note n=clipboard.get_note(i-cursor_x,j-cursor_y);
+			song->get_pattern(current_pattern)->set_note(i,j,!n.cloned?n:Note());
+			
+		}
 	}
+	
+	for (i=cursor_x;i<=limit_x;i++)
+		for (j=cursor_y;j<=limit_y;j++)
+			if (song->get_pattern(current_pattern)->get_note(i,j).note==Note::SCRIPT)
+				song->get_pattern(current_pattern)->scripted_clone(i,j);
 }
 
 void Editor::selection_paste_mix() {
@@ -422,16 +468,24 @@ void Editor::selection_paste_mix() {
 	limit_y=cursor_y+(clipboard.get_length()-1);
 	if (limit_y>(song->get_pattern(current_pattern)->get_length()-1)) limit_y=(song->get_pattern(current_pattern)->get_length()-1);
 	
-	for (i=cursor_x;i<=limit_x;i++)
-	
-		for (j=cursor_y;j<=limit_y;j++) {
-
-			if (song->get_pattern(current_pattern)->get_note(i,j).is_empty()) {
-
-				song->get_pattern(current_pattern)->set_note(i,j,clipboard.get_note(i-cursor_x,j-cursor_y) );
-			}
+	for (i=cursor_x;i<=limit_x;i++) {
 		
+		for (j=cursor_y;j<=limit_y;j++) {
+			
+			if (song->get_pattern(current_pattern)->get_note(i,j).is_empty()) {
+				
+				Note n=clipboard.get_note(i-cursor_x,j-cursor_y);
+				song->get_pattern(current_pattern)->set_note(i,j,!n.cloned?n:Note());
+				
+			}
+			
 		}
+	}
+	
+	for (i=cursor_x;i<=limit_x;i++)
+		for (j=cursor_y;j<=limit_y;j++)
+			if (song->get_pattern(current_pattern)->get_note(i,j).note==Note::SCRIPT)
+				song->get_pattern(current_pattern)->scripted_clone(i,j);
 }
 
 
@@ -449,20 +503,25 @@ void Editor::selection_paste_insert() {
 	if (limit_y>(song->get_pattern(current_pattern)->get_length()-1)) limit_y=(song->get_pattern(current_pattern)->get_length()-1);
 
 	for (i=cursor_x;i<=limit_x;i++) {
-
-
+		
 		for(j=(song->get_pattern(current_pattern)->get_length()-1);j>(limit_y);j--) {
-
+			
 			song->get_pattern(current_pattern)->set_note(i,j,song->get_pattern(current_pattern)->get_note(i,j-clipboard.get_length()));
 		}
-
+		
 		for (j=cursor_y;j<=limit_y;j++) {
-
-			song->get_pattern(current_pattern)->set_note(i,j,clipboard.get_note(i-cursor_x,j-cursor_y));
-
+			
+			Note n=clipboard.get_note(i-cursor_x,j-cursor_y);
+			song->get_pattern(current_pattern)->set_note(i,j,!n.cloned?n:Note());
+			
 		}
-
+		
 	}
+	
+	for (i=cursor_x;i<=limit_x;i++)
+		for (j=cursor_y;j<=limit_y;j++)
+			if (song->get_pattern(current_pattern)->get_note(i,j).note==Note::SCRIPT)
+				song->get_pattern(current_pattern)->scripted_clone(i,j);
 }
 
 void Editor::selection_volume_scale(int p_percent) {
