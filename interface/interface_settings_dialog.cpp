@@ -271,7 +271,7 @@ InterfaceSettingsDialog::InterfaceSettingsDialog(Window *p_parent,ConfigApi *p_c
 	mg = vb->add( new MarginGroup("Indicators Repaint Interval (ms):"));
 	
 	repaint_interval=mg->add(new SpinBox);
-	repaint_interval->get_range()->set_min( 20 );
+	repaint_interval->get_range()->set_min( 8 );
 	repaint_interval->get_range()->set( 60 );
 	repaint_interval->get_range()->set_max( 500 );
 	repaint_interval->get_range()->value_changed_signal.connect(this,&InterfaceSettingsDialog::repaint_interval_changed);

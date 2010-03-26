@@ -1,4 +1,12 @@
-VERSION 1.4
+26.03.10 - VERSION 1.4.1
+===================================================================================
+- disabled the asshole button (shift-f12, deadlocked audio thread)
+- disabled the dreaded crimson button (f1, painted screen red)
+- lowered minimum repaint interval to 8 milliseconds
+
+
+
+26.03.10 - VERSION 1.4
 ===================================================================================
 
 - fixed Alt-Shift-Q/Alt-Shift-A (raise/lower octave) not working on cursor

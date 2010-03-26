@@ -323,22 +323,22 @@ int main(int argc,char *argv[]) {
 					window->key( event.key.keysym.unicode, keycode_sdl_translator.get_code(event.key.keysym.sym), event.key.state==SDL_PRESSED,false, mod );
 					
 					
-					if (event.key.keysym.sym==SDLK_F1) {
+					/*if (event.key.keysym.sym==SDLK_F1) {
 	
 						painter->draw_fill_rect( GUI::Point() , GUI::Size( screen->w , screen->h ), GUI::Color(100,20,33) );
 						SDL_UpdateRect(screen, 0,0,0,0);
-					}
+					}*/
 	
 					//if (event.key.keysym.sym==SDLK_F2) {
 	
 					//painter->update_screen();
 					//}
 	
-					if ((event.key.keysym.mod&KMOD_LSHIFT) && event.key.keysym.sym==SDLK_F12) {
+					/*if ((event.key.keysym.mod&KMOD_LSHIFT) && event.key.keysym.sym==SDLK_F12) {
 						
 						printf("DeadLocking Audio Thread on Purpose! (shift-f12)!!\n");
 						SDL_LockAudio();
-					}
+					}*/
 					
 	//				printf("Pressed Key %s, unicode %i\n",GUI::Keyboard::get_code_name( keycode_sdl_translator.get_code(event.key.keysym.sym)).ascii().get_data(),event.key.keysym.unicode);
 				} break;
