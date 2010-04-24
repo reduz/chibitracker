@@ -35,7 +35,7 @@ public:
 	virtual bool can_load_sample()=0;
 	virtual bool can_load_instrument()=0;
 	
-	virtual Error load_song(const char *p_file,Song *p_song)=0;
+	virtual Error load_song(const char *p_file,Song *p_song,bool p_sampleset)=0;
 	virtual Error load_sample(const char *p_file,Sample *p_sample)=0;
 	virtual Error load_instrument(const char *p_file,Song *p_song,int p_instr_idx)=0;
 	

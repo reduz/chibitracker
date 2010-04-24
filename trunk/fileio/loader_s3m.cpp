@@ -359,7 +359,7 @@ Loader::Error Loader_S3M::load_patterns() {
 
 }
 
-Loader::Error Loader_S3M::load_song(const char *p_file,Song *p_song) {
+Loader::Error Loader_S3M::load_song(const char *p_file,Song *p_song,bool p_sampleset) {
 
 	song=p_song;
 

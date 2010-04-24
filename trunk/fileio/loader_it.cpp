@@ -17,7 +17,7 @@ bool Loader_IT::can_load_song() { return true; }
 bool Loader_IT::can_load_sample() { return true; }
 bool Loader_IT::can_load_instrument() { return true; }
 
-Loader::Error Loader_IT::load_song(const char *p_file,Song *p_song) {
+Loader::Error Loader_IT::load_song(const char *p_file,Song *p_song, bool p_sampleset) {
 	
 	
 	song=p_song;
@@ -28,7 +28,45 @@ Loader::Error Loader_IT::load_song(const char *p_file,Song *p_song) {
 	
 	Error err;
 	
-	if ((err=load_header())) {
+	char aux_identifier[4];
+	file->get_byte_array((Uint8*)aux_identifier,4);
+
+	if (	aux_identifier[0]!='I' ||
+		aux_identifier[1]!='M' ||
+		aux_identifier[2]!='P' ||
+		aux_identifier[3]!='M') {
+
+
+			ERR_PRINT("IT Loader Song: Failed Identifier");
+			return FILE_UNRECOGNIZED;
+	}
+
+
+	if (p_sampleset) {
+
+		song->reset(false,true,true,false);
+
+		if ((err=load_header(true))) {
+			file->close();
+			return err;
+		}
+
+		if ((err=load_samples())) {
+			file->close();
+			return err;
+		}
+
+		if ((err=load_instruments())) {
+			file->close();
+			return err;
+		}
+
+		return FILE_OK;
+	}
+
+	song->reset();
+
+	if ((err=load_header(false))) {
 		file->close();
 		return err;
 	}

@@ -104,7 +104,7 @@ public:
 	bool can_load_sample() { return false; }
 	bool can_load_instrument() { return false; }
 	
-	Error load_song(const char *p_file,Song *p_song);
+	Error load_song(const char *p_file,Song *p_song,bool p_sampleset);
 	Error load_sample(const char *p_file,Sample *p_sample);
 	Error load_instrument(const char *p_file,Song *p_song,int p_instr_idx);
 	

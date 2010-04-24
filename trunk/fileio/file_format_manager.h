@@ -72,7 +72,7 @@ class FileFormatManager {
 public:
 
 	void register_loader(Loader *p_loader); ///< Register a loader, will get deleted on destructor
-	Loader::Error load_song(const char *p_file,Song *p_song);
+	Loader::Error load_song(const char *p_file,Song *p_song,bool p_sampleset=false);
 	Loader::Error load_sample(const char *p_file,Sample* p_sample);
 	Loader::Error load_instrument(const char *p_file,Song *p_song, int p_instrument_idx);
 

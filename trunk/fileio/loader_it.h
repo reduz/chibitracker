@@ -81,7 +81,7 @@ class Loader_IT : public Loader  {
 	IT_Header header;
 	
 	/* Song Info Methods */
-	Error load_header();
+	Error load_header(bool p_dont_set);
 	Error load_orders();
 	Error load_message();
 
@@ -120,7 +120,7 @@ public:
 	bool can_load_sample();
 	bool can_load_instrument();
 	
-	Error load_song(const char *p_file,Song *p_song);
+	Error load_song(const char *p_file,Song *p_song, bool p_sampleset=false);
 	Error load_sample(const char *p_file,Sample *p_sample);
 	Error load_instrument(const char *p_file,Song *p_song,int p_instr_idx);
 

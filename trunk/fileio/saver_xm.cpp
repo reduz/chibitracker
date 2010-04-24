@@ -542,7 +542,10 @@ Saver::Error Saver_XM::save_song(const char *p_filename,Song *p_song) {
 			
 			f->store_byte( (signed char)fine );
 			f->store_byte( sm->get_loop_type( smp_id ) | ( sm->is_16bits(smp_id)? 16 : 0));
-			f->store_byte( (int)smp->get_pan() * 255 / 64 );
+			if (ins->is_pan_default_enabled())
+				f->store_byte( (int)ins->get_pan_default_amount() * 255 / 64 );
+			else
+				f->store_byte( (int)smp->get_pan() * 255 / 64 );
 			f->store_byte( (signed char)note );
 			f->store_byte( 0 ); //reserved
 			

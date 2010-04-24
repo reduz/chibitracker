@@ -28,7 +28,7 @@ public:
 	virtual bool can_load_sample() { return true; };
 	virtual bool can_load_instrument() { return false; };
 	
-	virtual Error load_song(const char *p_file,Song *p_song) { return FILE_UNRECOGNIZED; }
+	virtual Error load_song(const char *p_file,Song *p_song,bool p_sampleset) { return FILE_UNRECOGNIZED; }
 	virtual Error load_sample(const char *p_file,Sample *p_sample);
 	virtual Error load_instrument(const char *p_file,Song *p_song,int p_instr_idx) { return FILE_UNRECOGNIZED; }
 	
