@@ -43,7 +43,7 @@
 
 
 
-Loader::Error Loader_XM::load_song(const char *p_file,Song *p_song) {
+Loader::Error Loader_XM::load_song(const char *p_file,Song *p_song,bool p_sampleset) {
 
 	song=p_song;
 

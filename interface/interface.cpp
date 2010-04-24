@@ -443,8 +443,8 @@ void Interface::new_song_accept() {
 void Interface::open_song(String p_fname) {
 
 	button_stop_pressed(); //stop playback before loading.. avoid mess!
-	Loader::Error err = tracker.file_manager.load_song( p_fname.utf8().get_data(), tracker.song );
-	if (!err)
+	Loader::Error err = tracker.file_manager.load_song( p_fname.utf8().get_data(), tracker.song, sampleset_load->is_pressed() );
+	if (!sampleset_load->is_pressed() && !err)
 		last_filename=p_fname;
 	
 	switch(err) {
@@ -1065,6 +1065,7 @@ Interface::Interface(Window *p_window,Mixer *p_mixer,ConfigApi *p_config) : trac
 	
 	file_dialog = new FileDialog(window);
 	file_dialog->file_activated_signal.connect( this, &Interface::song_file_callback );
+	sampleset_load = file_dialog->get_extra_vb()->add(new CheckButton("Sampleset merge") );
 	
 	/* New Song Dialog */
 	

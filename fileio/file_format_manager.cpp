@@ -44,7 +44,7 @@ void FileFormatManager::register_loader(Loader *p_loader) {
  	loaders[loader_count++]=p_loader;
 }
 
-Loader::Error FileFormatManager::load_song(const char *p_file,Song *p_song) {
+Loader::Error FileFormatManager::load_song(const char *p_file,Song *p_song,bool p_sampleset) {
 
 
 	Loader::Error tmperr=Loader::FILE_UNRECOGNIZED;
@@ -56,7 +56,7 @@ Loader::Error FileFormatManager::load_song(const char *p_file,Song *p_song) {
 		if (!loaders[i]->can_load_song())
 			continue;
 
-		tmperr=loaders[i]->load_song(p_file,p_song);
+		tmperr=loaders[i]->load_song(p_file,p_song,p_sampleset);
 		
 		if (tmperr!=Loader::FILE_UNRECOGNIZED)
 			break;

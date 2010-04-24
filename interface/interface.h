@@ -116,6 +116,7 @@ class Interface : public InterfaceBase {
 	PatternScreen *pattern_screen;
 	SampleScreen *sample_screen;
 	InstrumentScreen *instrument_screen;
+	CheckButton *sampleset_load;
 	VariablesScreen *variables_screen;
 	KeyBind kb; //keybinds
 

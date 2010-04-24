@@ -30,7 +30,7 @@ Uint16 period_table[6*12] = {
 };
 
 
-Loader::Error Loader_MOD::load_song(const char *p_file,Song *p_song) {
+Loader::Error Loader_MOD::load_song(const char *p_file,Song *p_song,bool p_sampleset) {
 
 	if (file->open(p_file,FileAccessWrapper::READ)) {
 	//printf("Can't open file! %s\n",p_file);

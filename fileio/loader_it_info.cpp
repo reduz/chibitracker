@@ -36,36 +36,25 @@
 
 
 
-Loader::Error Loader_IT::load_header() {
+Loader::Error Loader_IT::load_header(bool p_dont_set) {
 
-	char aux_identifier[4];
-	file->get_byte_array((Uint8*)aux_identifier,4);
-
-	if (	aux_identifier[0]!='I' ||
-		aux_identifier[1]!='M' ||
-		aux_identifier[2]!='P' ||
-		aux_identifier[3]!='M') {
-		
-			
-			ERR_PRINT("IT Loader Song: Failed Identifier");
-			return FILE_UNRECOGNIZED;
-	}
-	
-	song->reset();
 	
 	char aux_songname[26];		
 		
 	file->get_byte_array((Uint8*)aux_songname,26);
-	song->set_name( aux_songname );
+	if (!p_dont_set)
+		song->set_name( aux_songname );
 	
 	Uint8 aux_hlmin=file->get_byte();
 	Uint8 aux_hlmaj=file->get_byte();
 
 	if (aux_hlmin==0) aux_hlmin=4;
 	if (aux_hlmaj==0) aux_hlmaj=16;
-	
-	song->set_row_highlight_minor( aux_hlmin );
-	song->set_row_highlight_major( aux_hlmaj );
+
+	if (!p_dont_set) {
+		song->set_row_highlight_minor( aux_hlmin );
+		song->set_row_highlight_major( aux_hlmaj );
+	}
 
 	header.ordnum=file->get_word();
 	header.insnum=file->get_word();
@@ -76,20 +65,32 @@ Loader::Error Loader_IT::load_header() {
 	header.cmwt=file->get_word();		/* Compatible with tracker ver > than val. */
 	header.flags=file->get_word();
 	
-
-	song->set_stereo( header.flags & 1 );
-	song->set_linear_slides( header.flags & 8 );
-	song->set_old_effects( header.flags & 16 );
-	song->set_compatible_gxx( header.flags & 32 );
-	song->set_instruments( header.flags & 4 );
+	if (!p_dont_set) {
+		song->set_stereo( header.flags & 1 );
+		song->set_linear_slides( header.flags & 8 );
+		song->set_old_effects( header.flags & 16 );
+		song->set_compatible_gxx( header.flags & 32 );
+		song->set_instruments( header.flags & 4 );
+	}
 	
 	
 	header.special=file->get_word();
-	song->set_global_volume( file->get_byte() );
-	song->set_mixing_volume( file->get_byte() );
-	song->set_speed( file->get_byte() );
-	song->set_tempo( file->get_byte() );
-	song->set_stereo_separation( file->get_byte() );
+	if (!p_dont_set) {
+
+		song->set_global_volume( file->get_byte() );
+		song->set_mixing_volume( file->get_byte() );
+		song->set_speed( file->get_byte() );
+		song->set_tempo( file->get_byte() );
+		song->set_stereo_separation( file->get_byte() );
+
+	} else {
+
+		file->get_byte(); // skip
+		file->get_byte(); // skip
+		file->get_byte(); // skip
+		file->get_byte(); // skip
+		file->get_byte(); // skip
+	}
 	file->get_byte(); // ZERO Byte
 	header.msglength=file->get_word();
 	header.msgoffset=file->get_dword();
@@ -104,14 +105,17 @@ Loader::Error Loader_IT::load_header() {
 		Uint8 pan_dst=(panbyte<65) ? panbyte : 32;
 		bool surround_dst=(panbyte==100);
 		bool mute_dst=(panbyte>=128);
-		
-		song->set_channel_pan( i, pan_dst ); 
-		song->set_channel_surround( i, surround_dst );
-		song->set_channel_mute( i, mute_dst );
+
+		if (!p_dont_set) {
+			song->set_channel_pan( i, pan_dst );
+			song->set_channel_surround( i, surround_dst );
+			song->set_channel_mute( i, mute_dst );
+		}
 	}
 	for (int i=0;i<64;i++) {
-		
-		song->set_channel_volume( i, file->get_byte() ); 
+		unsigned char cv = file->get_byte();
+		if (!p_dont_set)
+			song->set_channel_volume( i, file->get_byte() );
 	}
 
 	ERR_FAIL_COND_V( file->eof_reached(),FILE_CORRUPTED );
