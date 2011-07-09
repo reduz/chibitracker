@@ -32,7 +32,7 @@
 
 #include "loader_it.h"
 #include "error_macros.h"
-
+#include "stdio.h"
 
 
 
@@ -115,7 +115,7 @@ Loader::Error Loader_IT::load_header(bool p_dont_set) {
 	for (int i=0;i<64;i++) {
 		unsigned char cv = file->get_byte();
 		if (!p_dont_set)
-			song->set_channel_volume( i, file->get_byte() );
+			song->set_channel_volume( i, cv );
 	}
 
 	ERR_FAIL_COND_V( file->eof_reached(),FILE_CORRUPTED );

@@ -113,7 +113,9 @@ class SampleEditor : public VBoxContainer {
 	void apply_reverb();
 	void apply_alignment_to_all_samples(int p_align);
 	void apply_unroll_all_loops();
-	
+	void apply_amplify_to_all_samples(int p_align);
+	void apply_to16_all();
+
 	TabBox *mini_tabbox;
 public:
 	
@@ -121,6 +123,8 @@ public:
 		CMD_REVERB=SampleEditorEffects::CMD_MAX,
 		CMD_ALIGN_SALL_SAMPLES,
 		CMD_UNROLL_ALL_LOOPS,
+		CMD_CONVERT_ALL_TO_16,
+		CMD_AMPLIFY_ALL,
 	};
 	
 	Signal<> sample_freq_changed_signal;

@@ -364,6 +364,8 @@ SampleScreen::SampleScreen(Tracker *p_tracker,bool p_mini) {
 	sample_edit->add_separator();
 	sample_edit->add_item("Align Loop (ALL SAMPLES)",SampleEditor::CMD_ALIGN_SALL_SAMPLES);
 	sample_edit->add_item("Unroll Loop (ALL SAMPLES)",SampleEditor::CMD_UNROLL_ALL_LOOPS);
+	sample_edit->add_item("Convert to 16 (ALL SAMPLES)",SampleEditor::CMD_CONVERT_ALL_TO_16);
+	sample_edit->add_item("Amplify All (ALL SAMPLES)",SampleEditor::CMD_AMPLIFY_ALL);
 	
 	
 	sample_fx = mg->get_label_hb()->add( new MenuBox("FX"));
@@ -373,6 +375,7 @@ SampleScreen::SampleScreen(Tracker *p_tracker,bool p_mini) {
 	sample_fx->add_item("Swap Stereo Chans",SampleEditorEffects::CMD_SWAP_STEREO_CHANS);
 	sample_fx->add_separator();
 	sample_fx->add_item("Amplify",SampleEditorEffects::CMD_AMPLIFY);
+	sample_fx->add_item("Punch Envelope",SampleEditorEffects::CMD_PUNCH_ENVELOPE);
 	sample_fx->add_item("Fade In",SampleEditorEffects::CMD_FADE_IN);
 	sample_fx->add_item("Fade Out",SampleEditorEffects::CMD_FADE_OUT);
 	sample_fx->add_separator();
