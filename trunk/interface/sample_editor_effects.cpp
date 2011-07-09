@@ -376,6 +376,7 @@ void SampleEditorEffects::command(int p_command,int p_parameter) {
 				}
 			}
 			
+			sm->set_loop_type( aux, sm->get_loop_type( sample ) );
 			sm->set_loop_begin( aux, sm->get_loop_begin( sample ) );
 			sm->set_loop_end( aux, sm->get_loop_end( sample ) );
 			
@@ -471,6 +472,28 @@ void SampleEditorEffects::command(int p_command,int p_parameter) {
 				}
 			}
 			
+		} break;
+		case CMD_PUNCH_ENVELOPE: {
+
+			int len = get_end()+1-get_begin();
+			float amp = p_parameter/100.0;
+			for (int c=0;c<ch;c++) {
+
+				for (int i=get_begin();i<(get_end()+1);i++) {
+
+					Sint32 samp=sm->get_data(sample,i,c);
+					float pos = (i-get_begin())/float(len);
+
+					float lamp = amp*(1.0-pos)+pos;
+					samp=samp*lamp;
+					if (samp>32767)
+						samp=32767;
+					if (samp<-32768)
+						samp=-32768;
+					sm->set_data( sample,i,(Sint16)samp,c );
+				}
+			}
+
 		} break;
 		case CMD_FADE_IN: {
 			
@@ -915,6 +938,7 @@ bool SampleEditorEffects::command_has_parameter(int p_command) {
 	switch(p_command) {
 		
 		case CMD_AMPLIFY:
+		case CMD_PUNCH_ENVELOPE:
 		case CMD_FIX_LOOPING:
 		case CMD_RESAMPLE:
 		case CMD_RESAMPLE_FREQ:
@@ -964,6 +988,13 @@ void SampleEditorEffects::command_set_parameter_range(int p_command,int& p_min, 
 			p_max=100;
 			p_default=10;
 			
+		} break;
+		case CMD_PUNCH_ENVELOPE: {
+
+			p_min=0;
+			p_max=800;
+			p_default=300;
+
 		} break;
 		case CMD_RESAMPLE: {
 			

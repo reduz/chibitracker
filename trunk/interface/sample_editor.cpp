@@ -142,8 +142,25 @@ void SampleEditor::fx_command(int p_command) {
 			
 		sample_modified_signal.call();
 		return;
+	} else if (p_command==CMD_AMPLIFY_ALL) {
+
+		current_fx=p_command;
+		fx_param->get_range()->set_min( 0 );
+		fx_param->get_range()->set_max( 500 );
+		fx_param->get_range()->set( 30 );
+
+		fx_group->set_label_text( "All Samples Amplify:" );
+
+		fx_param_window->show();
+
+		return;
+
+	} else if (p_command==CMD_CONVERT_ALL_TO_16) {
+
+
+		apply_to16_all();
+		return;
 	}
-	
 	
 	
 	if (effects.command_has_parameter( p_command )) {
@@ -160,6 +177,10 @@ void SampleEditor::fx_command(int p_command) {
 			case SampleEditorEffects::CMD_AMPLIFY: {
 						
 				fx_group->set_label_text( "Amplify (%):" );
+			} break;
+			case SampleEditorEffects::CMD_PUNCH_ENVELOPE: {
+
+				fx_group->set_label_text( "Attack Amp (%):" );
 			} break;
 			case SampleEditorEffects::CMD_ADD_SILENCE_AT_END: {
 						
@@ -221,6 +242,11 @@ void SampleEditor::apply_fx() {
 		apply_alignment_to_all_samples( (int)fx_param->get_range()->get() );
 		fx_param_window->hide();
 		return;
+	} else if (current_fx==CMD_AMPLIFY_ALL) {
+
+		apply_amplify_to_all_samples( (int)fx_param->get_range()->get() );
+		fx_param_window->hide();
+		return;
 	}
 	
 	fx_param_window->hide();
@@ -266,6 +292,49 @@ void SampleEditor::apply_alignment_to_all_samples(int p_align) {
 		}
 	}
 	
+	effects.set_sample( sample );
+	sample_modified_signal.call();
+
+}
+
+
+void SampleEditor::apply_to16_all() {
+
+	Song * s= editor->get_song();
+
+
+	for (int i=0;i<Song::MAX_SAMPLES;i++) {
+
+		Sample_ID smp = s->get_sample(i)->get_sample_data();
+		if (!smp.is_null()) {
+
+
+			if (!SampleManager::get_singleton()->is_16bits(smp)) {
+				effects.set_sample( smp );
+				effects.command( SampleEditorEffects::CMD_TOGGLE_DEPTH );
+			}
+		}
+	}
+
+	effects.set_sample( sample );
+	sample_modified_signal.call();
+}
+
+void SampleEditor::apply_amplify_to_all_samples(int p_align) {
+
+	Song * s= editor->get_song();
+
+
+	for (int i=0;i<Song::MAX_SAMPLES;i++) {
+
+		Sample_ID smp = s->get_sample(i)->get_sample_data();
+		if (!smp.is_null()) {
+
+			effects.set_sample( smp );
+			effects.command( SampleEditorEffects::CMD_AMPLIFY, p_align );
+		}
+	}
+
 	effects.set_sample( sample );
 	sample_modified_signal.call();
 
