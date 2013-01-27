@@ -91,6 +91,31 @@ Saver::Error Saver_WAV::save_sample(const char *p_filename,Sample *p_sample) {
 	file->store_word(blockalign); // block align (unused)
 	file->store_word( bits_per_sample );
 
+	if (sm->get_loop_type(sample)!=LOOP_NONE) {
+
+		file->store_byte_array((const Uint8*)"smpl",4);
+		file->store_dword((6+9)*4); //manufacturer
+
+		file->store_dword(0); //manufacturer
+		file->store_dword(0); //product
+		file->store_dword(1); //period
+		file->store_dword(48); //midi note
+		file->store_dword(0); //midi pitch
+		file->store_dword(0); //smpte format
+		file->store_dword(0); //smpte offset
+		file->store_dword(1); //sampler loops
+		file->store_dword(24); //extra bytes
+
+		file->store_dword(0); //cue point
+		file->store_dword(sm->get_loop_type(sample)==LOOP_FORWARD?0:1); //loop
+		file->store_dword(sm->get_loop_begin(sample));
+		file->store_dword(sm->get_loop_end(sample));
+		file->store_dword(0); //fraction
+		file->store_dword(0); //play count
+		
+	}
+
+
 	/* DATA CHUNK */
 
 	file->store_byte_array((const Uint8*)"data",4);

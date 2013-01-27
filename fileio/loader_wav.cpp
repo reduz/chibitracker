@@ -54,6 +54,10 @@ Loader::Error Loader_WAV::load_sample(const char *p_file,Sample *p_sample) {
 	int format_bits=0;
 	int format_channels=0;
 	int format_freq=0;
+	bool loop=false;
+	bool loop_pingpong=false;
+	int loop_begin=0;
+	int loop_end=0;
 
 	Error err=FILE_CORRUPTED;
 	
@@ -76,6 +80,21 @@ Loader::Error Loader_WAV::load_sample(const char *p_file,Sample *p_sample) {
 			break;
 		}
 		
+		
+		if (chunkID[0]=='s' && chunkID[1]=='m' && chunkID[2]=='p' && chunkID[3]=='l') {
+
+			for(int i=0;i<10;i++) {
+				file->get_dword();
+			}
+
+			loop=true;
+			if (file->get_dword())
+				loop_pingpong=true;
+			loop_begin=file->get_dword();
+			loop_end=file->get_dword();		
+			
+		}
+
 		if (chunkID[0]=='f' && chunkID[1]=='m' && chunkID[2]=='t' && chunkID[3]==' ' && !format_found) {
 			/* IS FORMAT CHUNK */
 
@@ -136,6 +155,12 @@ Loader::Error Loader_WAV::load_sample(const char *p_file,Sample *p_sample) {
 
 				err=FILE_OUT_OF_MEMORY;
 				break;
+			}
+			if (loop) {
+
+				sm->set_loop_type(data, loop_pingpong? LOOP_BIDI : LOOP_FORWARD );
+				sm->set_loop_begin(data, loop_begin );
+				sm->set_loop_end(data, loop_end );
 			}
 
 			if (!sm->lock_data( data ) && sm->get_data( data ) ) {
