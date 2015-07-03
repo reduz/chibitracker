@@ -14,6 +14,7 @@
 #define CONFIG_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 
 #define VERSION_MAJOR 1
@@ -78,8 +79,8 @@ typedef __int64 Sint64;
 typedef __int64 Uint64;
 
 #else
-typedef signed long long Sint64;
-typedef unsigned long long Uint64;
+typedef int64_t Sint64;
+typedef uint64_t Uint64;
 
 #endif
 
