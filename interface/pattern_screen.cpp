@@ -389,6 +389,7 @@ void PatternScreen::update_undo_list() {
 			case Editor::PATTERN_SELECTION_WIPE_STRAY_VOLUMES: undo_text=(String::num( editor->get_undo_pattern(i))+" Wipe Stray Vol"); break;
 			case Editor::PATTERN_SELECTION_TRANSPOSE: undo_text=(String::num( editor->get_undo_pattern(i))+" Reassign Notes"); break;
 			case Editor::PATTERN_SELECTION_TIME_SCALE: undo_text=(String::num( editor->get_undo_pattern(i))+" Time Scale"); break;
+			case Editor::PATTERN_INPUT_DATA: undo_text=(String::num( editor->get_undo_pattern(i))+" Input Data"); break;
 			
 		}
 		

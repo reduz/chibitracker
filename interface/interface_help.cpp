@@ -122,15 +122,15 @@ Pattern Edit:\n\
 -=-=-=-=-=-=-=-=-=-=-=-=-=-<\n\
 \n\
  Default Pattern Edit Keys.\n\
-   Grey +,-         Next/Previous pattern  (*)\n\
-   Ctrl +,-         Next/Previous order's pattern  (*)\n\
-   0-9              Change octave/volume/instrument\n\
-   0-9, A-F         Change effectvalue\n\
-   A-Z              Change effect\n\
-   . (Period)       Clear field(s)\n\
-   1                Note cut (^^^)\n\
-   `                Note off (---) / Panning Toggle\n\
-   Spacebar         Use last note/instrument/volume/effect/effectvalue\n\
+   Grey +,-         Next/Previous pattern\n\
+   Ctrl +,-         Next/Previous order's pattern\n\
+   0-9              Change octave/volume/instrument  (*)\n\
+   0-9, A-F         Change effectvalue  (*)\n\
+   A-Z              Change effect  (*)\n\
+   . (Period)       Clear field(s)  (*)\n\
+   1                Note cut (^^^)  (*)\n\
+   `                Note off (---) / Panning Toggle  (*)\n\
+   Spacebar         Use last note/instrument/volume/effect/effectvalue  (*)\n\
 \n\
    Enter            Get default note/instrument/volume/effect\n\
    <                Decrease instrument\n\
@@ -138,7 +138,7 @@ Pattern Edit:\n\
    Grey /,*         Decrease/Increase octave\n\
    , (Comma)        Toggle edit mask for current field\n\
 \n\
-   Ins/Del          Insert/Delete a row to/from current channel\n\
+   Ins/Del          Insert/Delete a row to/from current channel  (*)\n\
    Alt-Ins/Del      Insert/Delete an entire row to/from pattern  (*)\n\
 \n\
    Up/Down          Move up/down by the skipvalue (set with Alt 0-9)\n\
@@ -152,7 +152,6 @@ Pattern Edit:\n\
    Home             Move to start of column/start of line/start of pattern\n\
    End              Move to end of column/end of line/end ofpattern\n\
 \n\
-   Alt-Backspace    Revert pattern data  (*)\n\
    Ctrl-Backspace   Undo - any function with  (*) can be undone\n\
 \n\
    Ctrl-C           Toggle centralise cursor\n\
