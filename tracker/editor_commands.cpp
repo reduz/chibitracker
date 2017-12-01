@@ -225,7 +225,6 @@ void Editor::cursor_goto_pattern(int p_pattern) {
 		return;
 
        	current_pattern=p_pattern;
-	push_current_pattern_to_undo_list(PATTERN_OP_SET_PATTERN);	
 
        	normalize_selection();
 }
@@ -234,6 +233,7 @@ void Editor::cursor_insert() {
 
 	int i,limit;
 	Note aux_note;
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	limit=song->get_pattern(current_pattern)->get_length()-1;
 
 
@@ -251,6 +251,7 @@ void Editor::cursor_delete() {
 	int i,limit;
 	
 	Note aux_note;
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	limit=song->get_pattern(current_pattern)->get_length()-1;
 
         for(i=cursor_y;i<limit;i++) {
@@ -285,6 +286,7 @@ void Editor::toggle_mask_at_cursor() {
 
 void Editor::clear_field_at_cursor() {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	switch (cursor_field) {
 
 		case 0:{

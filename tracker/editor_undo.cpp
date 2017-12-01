@@ -42,13 +42,6 @@ void Editor::push_pattern_to_undo_list(int p_index,const Pattern &p_pattern,Patt
 
 	int i;
 
-	if ((undo_max>=0) && (p_reason==undo_buffer[0].reason) && undo_buffer[0].is_redo==p_is_redo && undo_buffer[0].pattern_index==p_index && !p_dont_collapse)
-
-		return;
-
-	// [[todo]]Avoid sending the same type of operation consecutively to the undo buffer
-
-
 	if (undo_max==(MAX_UNDO_OPERATIONS-1)) {
 
 		delete undo_buffer[undo_max].pattern_data;
@@ -78,14 +71,23 @@ void Editor::undo_index(int p_undo_index) {
 
 
 	Pattern aux_pattern;
+	int i;
 
 	if ((p_undo_index<0) || (p_undo_index>undo_max)) return;
 
 	song->get_pattern(current_pattern)->copy_to(&aux_pattern);
+
+	// If we are trying to undo a change that was NOT made in the current pattern, we have to change patterns first.
+	if (undo_buffer[p_undo_index].pattern_index != current_pattern)
+		current_pattern = undo_buffer[p_undo_index].pattern_index;
 	
 	undo_buffer[p_undo_index].pattern_data->copy_to(song->get_pattern(current_pattern));
+	for (i=0;i<undo_max;i++) {
 
-	push_pattern_to_undo_list(undo_buffer[p_undo_index].pattern_index,aux_pattern,undo_buffer[p_undo_index].reason,true);
+		undo_buffer[i]=undo_buffer[i+1];
+	}
+	undo_max--;
+
 	undo_display_pending=true;
 	
 }

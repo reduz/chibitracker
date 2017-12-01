@@ -48,6 +48,7 @@
 bool Editor::insert_note_value_at_cursor(int p_note) {
 
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n = get_current_note();
 	n.note=p_note;
 	//remember mask
@@ -149,6 +150,7 @@ bool Editor::insert_note_at_cursor(unsigned int scode) {
 
 void Editor::insert_octave_at_cursor(Uint8 octave) {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	if (n.note>=Note::NOTES) return;
 	
@@ -161,6 +163,7 @@ void Editor::insert_instrument_at_cursor_field1(Uint8 instrument) {
 
 	int tmp_inst;
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	tmp_inst=n.instrument;
 
@@ -190,6 +193,7 @@ void Editor::insert_instrument_at_cursor_field2(Uint8 instrument) {
 
 	int tmp_inst;
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	tmp_inst=n.instrument;
 
@@ -222,6 +226,7 @@ void Editor::insert_script_source_at_cursor_field1(unsigned int unicode) {
 	int tmp_inst;
 	int instrument=0;
     
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	tmp_inst=n.instrument;
     
@@ -258,6 +263,7 @@ void Editor::insert_script_source_at_cursor_field2(Uint8 instrument) {
 
 	int tmp_inst;
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	tmp_inst=n.instrument;
 
@@ -286,6 +292,7 @@ void Editor::insert_script_instrument_at_cursor_field1(Uint8 instrument) {
 
 	int tmp_inst;
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	tmp_inst=n.volume;
 
@@ -314,6 +321,7 @@ void Editor::insert_script_instrument_at_cursor_field2(Uint8 instrument) {
 
 	int tmp_inst;
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	tmp_inst=n.volume;
 
@@ -344,6 +352,7 @@ void Editor::insert_volume_at_cursor_field1(Uint8 volume) {
 
 	Uint8 tmpvol,rightvol;
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
         tmpvol=n.volume;
 	
@@ -396,6 +405,7 @@ void Editor::insert_volume_at_cursor_field2(Uint8 volume) {
 
 	Uint8 tmpvol,leftvol;
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
         tmpvol=n.volume;
 
@@ -444,6 +454,7 @@ void Editor::insert_volume_at_cursor_field2(Uint8 volume) {
 
 void Editor::insert_command_at_cursor(char command) {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	
 	
@@ -469,6 +480,7 @@ void Editor::insert_command_at_cursor(char command) {
 
 void Editor::insert_parameter_at_cursor_field1(Uint8 parameter) {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	n.parameter=parameter*0x10+n.parameter % 0x10;
 	last_command=n.command;
@@ -481,6 +493,7 @@ void Editor::insert_parameter_at_cursor_field1(Uint8 parameter) {
 
 void Editor::insert_parameter_at_cursor_field2(Uint8 parameter) {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	n.parameter=parameter+n.parameter/0x10*0x10;
 	last_command=n.command;
@@ -494,6 +507,7 @@ void Editor::insert_parameter_at_cursor_field2(Uint8 parameter) {
 
 void Editor::insert_script_command_at_cursor(char command) {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	
 	n.command = command=='Q' ? '^' : 'v';
@@ -504,6 +518,7 @@ void Editor::insert_script_command_at_cursor(char command) {
 
 void Editor::insert_script_parameter_at_cursor_field1(Uint8 parameter) {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	n.parameter=parameter*0x10+n.parameter % 0x10;
 	last_command=n.command;
@@ -516,6 +531,7 @@ void Editor::insert_script_parameter_at_cursor_field1(Uint8 parameter) {
 
 void Editor::insert_script_parameter_at_cursor_field2(Uint8 parameter) {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	n.parameter=parameter+n.parameter/0x10*0x10;
 	last_command=n.command;
@@ -623,6 +639,7 @@ bool Editor::key_press_at_cursor(unsigned int p_scode,unsigned int p_unicode,boo
 
 void Editor::insert_noteoff_at_cursor() {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	if (cursor_field<2) {
 
@@ -641,6 +658,7 @@ void Editor::insert_noteoff_at_cursor() {
 }
 void Editor::insert_mask_at_cursor() {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	switch (cursor_field) {
 
@@ -708,6 +726,7 @@ void Editor::get_mask_from_cursor() {
 
 void Editor::insert_notecut_at_cursor() {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	n.clear();
 	n.note=Note::CUT;
@@ -719,6 +738,7 @@ void Editor::insert_notecut_at_cursor() {
 
 void Editor::insert_script_at_cursor() {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	if (n.note!=Note::SCRIPT) n.clear();
 	n.note=Note::SCRIPT;
@@ -729,6 +749,7 @@ void Editor::insert_script_at_cursor() {
 
 void Editor::perform_raise_at_cursor() {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	n.raise();
 	set_current_note(n);
@@ -736,6 +757,7 @@ void Editor::perform_raise_at_cursor() {
 
 void Editor::perform_lower_at_cursor() {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	n.lower();
 	set_current_note(n);
@@ -743,6 +765,7 @@ void Editor::perform_lower_at_cursor() {
 
 void Editor::perform_raise_octave_at_cursor() {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	
 	if (n.note<Note::NOTES) {
@@ -761,6 +784,7 @@ void Editor::perform_raise_octave_at_cursor() {
 
 void Editor::perform_lower_octave_at_cursor() {
 
+	push_current_pattern_to_undo_list(PATTERN_INPUT_DATA);
 	Note n=get_current_note();
 	
 	if (n.note<Note::NOTES) {
