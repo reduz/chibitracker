@@ -26,7 +26,7 @@ if (os.name=="nt"):
 	else:
 		env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['/DANSIC_LIBS_ENABLED','/DWINDOWS_ENABLED'],ENV=os.environ);
 #		env.Append(CPPFLAGS=['/IC:\Program Files\Microsoft Visual Studio 8\VC\include\SDL','/D_REENTRANT','/DWINDOWS_ENABLED','/Zi','/Yd','/MT','/Gd']);
-#	        env.Append(LIBS=['SDLmain','SDL']);
+#		env.Append(LIBS=['SDLmain','SDL']);
 #		env.Append(LINKFLAGS=['/FORCE:MULTIPLE','/DEBUG']);
 #		env["DEBUG_CXXFLAGS"]=['-g3','-Wall']
 #		env["DEBUG_LINKFLAGS"]=[]
@@ -44,9 +44,9 @@ else:
 	env = Environment(CPPPATH=['#/globals','#gui','#.'],CPPFLAGS=['-DANSIC_LIBS_ENABLED'],ENV=os.environ);
 	errorval=os.system("sdl-config --version");
 
-        if (errorval):
-                print "Error: cant execute sdl-config, make sure SDL is installed";
-                exit(255);
+	if (errorval):
+		print("Error: cant execute sdl-config, make sure SDL is installed")
+		exit(255);
 	else:
 		print("libSDL Detected");
 
@@ -56,10 +56,10 @@ else:
 	
 	errorval=os.system("pkg-config alsa --modversion");
 
-        if (True or errorval):
-                print "ALSA not detected.";
+	if (True or errorval):
+		print("ALSA not detected.")
 	else:
-	 	print "ALSA detected.";
+		print("ALSA detected.")
 		env.ParseConfig('pkg-config alsa --cflags --libs')
 		env.Append(CPPFLAGS=['-DALSA_ENABLED']);	
 
@@ -82,7 +82,7 @@ env.build_nds=NDS
 env["LIBS"]=['interface','drivers','tracker','gui','fileio','player','song','mixer','globals']+env["LIBS"]
 
 
-opts=Options()
+opts = Variables()
 opts.Add('target', 'Target: (debug/profile/release).', "debug")
 opts.Add('prefix', 'The installation prefix', '/usr/local/')
 opts.Add('meta_as_alt', 'META Key works as ALT (MAC keyboards)', 0)
@@ -131,16 +131,16 @@ env.Append(LIBPATH=['#song','#mixer','#gui','#drivers','#fileio','#tracker','#gl
 
 
 if (env['target']=='debug'):
-        env.Append(CXXFLAGS=env["DEBUG_CXXFLAGS"]);
-        env.Append(LINKFLAGS=env["DEBUG_LINKFLAGS"]);
-	
+	env.Append(CXXFLAGS=env["DEBUG_CXXFLAGS"]);
+	env.Append(LINKFLAGS=env["DEBUG_LINKFLAGS"]);
+
 if (env['target']=='profile'):
-        env.Append(CXXFLAGS=env["PROFILE_CXXFLAGS"]);
-        env.Append(LINKFLAGS=env["PROFILE_LINKFLAGS"]);
+	env.Append(CXXFLAGS=env["PROFILE_CXXFLAGS"]);
+	env.Append(LINKFLAGS=env["PROFILE_LINKFLAGS"]);
 
 if (env['target']=='release'):
-        env.Append(CXXFLAGS=env["RELEASE_CXXFLAGS"]);
-        env.Append(LINKFLAGS=env["RELEASE_LINKFLAGS"]);
+	env.Append(CXXFLAGS=env["RELEASE_CXXFLAGS"]);
+	env.Append(LINKFLAGS=env["RELEASE_LINKFLAGS"]);
 
 if ((env['meta_as_alt'])):
 	env.Append(CXXFLAGS=['-DMETA_AS_ALT']);
@@ -163,6 +163,6 @@ SConscript('program/SCsub');
 
 
 if env['prefix']:
-        dst_target = env.Install(env['prefix']+'/bin', env.bin_targets)
-        env.Alias('install', dst_target )
+	dst_target = env.Install(env['prefix']+'/bin', env.bin_targets)
+	env.Alias('install', dst_target )
 
