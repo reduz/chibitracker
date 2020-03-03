@@ -1,0 +1,10 @@
+# Build objects
+program/chibiconvert
+program/chibitracker
+*.a
+*.o
+.sconsign.dblite
+
+# Misc
+*~
+*.log
